@@ -1,0 +1,66 @@
+
+    :root {
+      /* едва заметный ледяной узор (снежинки) */
+      --ice-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.55' stroke-width='1.4' stroke-linecap='round'%3E%3Cg transform='translate(32 30)'%3E%3Cpath d='M0 -11V11M-9.5 -5.5L9.5 5.5M-9.5 5.5L9.5 -5.5'/%3E%3Cpath d='M0 -11l-3 3M0 -11l3 3M0 11l-3 -3M0 11l3 -3'/%3E%3C/g%3E%3Cg transform='translate(96 94)'%3E%3Cpath d='M0 -9V9M-7.8 -4.5L7.8 4.5M-7.8 4.5L7.8 -4.5'/%3E%3C/g%3E%3Cg transform='translate(100 26)' stroke-opacity='0.4'%3E%3Cpath d='M0 -7V7M-6 -3.5L6 3.5M-6 3.5L6 -3.5'/%3E%3C/g%3E%3Cg transform='translate(26 98)' stroke-opacity='0.4'%3E%3Cpath d='M0 -6V6M-5 -3L5 3M-5 3L5 -3'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #9fbdda;
+      background-image:
+        radial-gradient(120% 80% at 50% 0%, #d4e6f6 0%, #9fbdda 100%);
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+    }
+
+    /* подложка/«рамка» — на десктопе телефон по центру, на мобиле — на весь экран */
+    .nl-frame {
+      width: 375px;
+      height: 100dvh;
+      max-height: 812px;
+      position: relative;
+    }
+    @media (min-width: 480px) {
+      .nl-frame {
+        border-radius: 30px;
+        box-shadow: 0 30px 80px rgba(30, 60, 100, .45), 0 0 0 10px #11151c, 0 0 0 11px #2c333e;
+        overflow: hidden;
+      }
+    }
+
+    .nl-app {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      background-color: var(--color-bg);
+      background-image: var(--bg-texture, none);
+      background-size: 128px 128px;
+      overflow: hidden;
+    }
+    .nl-header { flex: 0 0 auto; }
+    .nl-tabbar { flex: 0 0 auto; padding-bottom: env(safe-area-inset-bottom, 0); }
+    .nl-body { position: relative; flex: 1 1 auto; overflow: hidden; }
+
+    .nl-scroll {
+      position: absolute; inset: 0;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    /* кнопки реакций блога */
+    .nl-react {
+      display: inline-flex; align-items: center; gap: 4px;
+      border: 1.5px solid var(--color-line); background: var(--color-card);
+      border-radius: 999px; padding: 5px 10px; min-height: 32px;
+      font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer;
+      color: var(--color-text-soft); transition: all .12s ease;
+    }
+    .nl-react:active { transform: scale(.95); }
+    .nl-react.on { border-color: var(--color-reputation); background: color-mix(in srgb, var(--color-reputation) 16%, white); color: var(--color-text); }
+    .nl-react--mute { cursor: default; }
+    .nl-react--mute:active { transform: none; }
+
+    /* скроллбар поминиатюрнее */
+    .nl-scroll::-webkit-scrollbar { width: 0; }
+  
