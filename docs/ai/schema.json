@@ -1,0 +1,3298 @@
+{
+  "formatVersion": 1,
+  "source": "Встроенная логическая модель проекта, редакция 0.4",
+  "status": "Производная рабочая логическая модель, не физическая схема и не контракт API.",
+  "interpretation": "keys и nullable перенесены из описания. FK указывает маркировку поля; целевой столбец, каскады, defaults и индексы здесь не выводятся автоматически. Условная обязательность и enum описаны текстом.",
+  "counts": {
+    "modules": 8,
+    "tables": 48,
+    "fields": 345,
+    "foreignKeyFields": 88
+  },
+  "modules": [
+    {
+      "id": "M1",
+      "title": "Пользователи и приём — 9 таблиц",
+      "tables": [
+        "accounts",
+        "parent_profiles",
+        "children",
+        "parent_children",
+        "child_onboarding",
+        "consents",
+        "organizations",
+        "cohorts",
+        "access_applications"
+      ],
+      "responsibility": "Блок 1: взрослые и дети, семья, организации, заявки и согласия."
+    },
+    {
+      "id": "M2",
+      "title": "Персонал и права — 5 таблиц",
+      "tables": [
+        "staff_profiles",
+        "roles",
+        "permissions",
+        "staff_roles",
+        "role_permissions"
+      ],
+      "responsibility": "Блок 1: сотрудники, роли, разрешения и области доступа."
+    },
+    {
+      "id": "M3",
+      "title": "Мастерские и диалоги — 10 таблиц",
+      "tables": [
+        "workshops",
+        "workshop_categories",
+        "characters",
+        "task_lines",
+        "workshop_labels",
+        "dialogue_nodes",
+        "dialogue_node_types",
+        "conditional_dialogue_nodes",
+        "condition_types",
+        "dialogue_response_types"
+      ],
+      "responsibility": "Блок 2: структура мастерских, персонажи, линии и сценарные реплики."
+    },
+    {
+      "id": "M4",
+      "title": "Банк заданий — 7 таблиц",
+      "tables": [
+        "tasks",
+        "task_variants",
+        "task_dialogues",
+        "task_materials",
+        "task_labels",
+        "task_reference_answers",
+        "task_rewards"
+      ],
+      "responsibility": "Блок 3: шаблоны заданий, варианты, материалы, проверка и настройки наград."
+    },
+    {
+      "id": "M5",
+      "title": "Выполнение и общение — 5 таблиц",
+      "tables": [
+        "child_tasks",
+        "task_submissions",
+        "submission_media",
+        "task_messages",
+        "child_workshops"
+      ],
+      "responsibility": "Блок 4 и §2.6: взятие заданий, попытки, файлы, чат, участие в мастерских и сертификаты."
+    },
+    {
+      "id": "M6",
+      "title": "Экономика и прогресс — 7 таблиц",
+      "tables": [
+        "accruals",
+        "accrual_types",
+        "accrual_sources",
+        "child_characters",
+        "child_characteristics",
+        "items",
+        "child_items"
+      ],
+      "responsibility": "Блок 5: журнал начислений, репутация и производные характеристики. Предметы и инвентарь остаются предварительным заделом."
+    },
+    {
+      "id": "M7",
+      "title": "Общие ресурсы — 2 таблицы",
+      "tables": [
+        "media",
+        "labels"
+      ],
+      "responsibility": "Общие файлы и содержательные метки для нескольких блоков. Связующие таблицы принадлежат модулю соответствующего контента."
+    },
+    {
+      "id": "M8",
+      "title": "Подписки — 3 таблицы, предварительно",
+      "tables": [
+        "subscription_plans",
+        "subscriptions",
+        "subscription_children"
+      ],
+      "responsibility": "Будущий платёжный блок. Текущая заявка относится к M1; эта группировка не утверждает окончательную модель платежей."
+    }
+  ],
+  "tables": [
+    {
+      "name": "accounts",
+      "module": "M1",
+      "sourceAnchor": "_toc239371071",
+      "description": "Взрослые учётные записи для единого шлюза «Кабинеты».",
+      "notes": [
+        "**Пояснения.** Ребёнок в accounts не хранится."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Уникальный идентификатор взрослого аккаунта."
+        },
+        {
+          "name": "full_name",
+          "keys": [],
+          "type": "varchar(200)",
+          "nullable": false,
+          "description": "ФИО взрослого."
+        },
+        {
+          "name": "phone",
+          "keys": [],
+          "type": "varchar(32) NULL",
+          "nullable": true,
+          "description": "Телефон; уникальный, если указан."
+        },
+        {
+          "name": "email",
+          "keys": [],
+          "type": "varchar(254) NULL",
+          "nullable": true,
+          "description": "Email; уникальный, если указан."
+        },
+        {
+          "name": "password_hash",
+          "keys": [],
+          "type": "varchar(255) NULL",
+          "nullable": true,
+          "description": "Хеш пароля; NULL при OAuth-only аккаунте."
+        },
+        {
+          "name": "auth_method",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "password / oauth."
+        },
+        {
+          "name": "oauth_provider",
+          "keys": [],
+          "type": "varchar(50) NULL",
+          "nullable": true,
+          "description": "OAuth-провайдер, если используется."
+        },
+        {
+          "name": "oauth_subject",
+          "keys": [],
+          "type": "varchar(255) NULL",
+          "nullable": true,
+          "description": "Идентификатор пользователя у OAuth-провайдера."
+        },
+        {
+          "name": "phone_verified_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата подтверждения телефона."
+        },
+        {
+          "name": "email_verified_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата подтверждения email."
+        },
+        {
+          "name": "external_brand_id",
+          "keys": [],
+          "type": "varchar(100) NULL",
+          "nullable": true,
+          "description": "Резерв под будущую общую базу бренда."
+        },
+        {
+          "name": "is_active",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Активность аккаунта."
+        },
+        {
+          "name": "created_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Организатор, создавший кабинет; NULL допустим для системных/мигрированных записей."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата создания."
+        },
+        {
+          "name": "updated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата изменения."
+        },
+        {
+          "name": "last_login_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Последний успешный вход."
+        }
+      ]
+    },
+    {
+      "name": "parent_profiles",
+      "module": "M1",
+      "sourceAnchor": "_toc239371072",
+      "description": "Профиль Родителя как расширение взрослого Аккаунта.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "account_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ссылка на accounts.id; один профиль Родителя на аккаунт."
+        },
+        {
+          "name": "registration_source",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "family_application / institutional_application."
+        },
+        {
+          "name": "activated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата активации профиля."
+        }
+      ]
+    },
+    {
+      "name": "staff_profiles",
+      "module": "M2",
+      "sourceAnchor": "_toc239371073",
+      "description": "Профиль Персонала как расширение взрослого Аккаунта.",
+      "notes": [
+        "**Пояснения.** Конкретные роли сотрудника хранятся в staff_roles."
+      ],
+      "fields": [
+        {
+          "name": "account_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ссылка на accounts.id; один профиль Персонала на аккаунт."
+        },
+        {
+          "name": "employment_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "staff / contractor / volunteer."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "active / vacation / terminated."
+        }
+      ]
+    },
+    {
+      "name": "children",
+      "module": "M1",
+      "sourceAnchor": "_toc239371074",
+      "description": "Отдельная детская учётная запись и профиль; не связана с взрослой аутентификацией.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор ребёнка."
+        },
+        {
+          "name": "login",
+          "keys": [],
+          "type": "varchar(100)",
+          "nullable": false,
+          "description": "Уникальный детский логин."
+        },
+        {
+          "name": "access_code_hash",
+          "keys": [],
+          "type": "varchar(255)",
+          "nullable": false,
+          "description": "Хеш 6-значного кода доступа."
+        },
+        {
+          "name": "display_name",
+          "keys": [],
+          "type": "varchar(100)",
+          "nullable": false,
+          "description": "Отображаемое имя."
+        },
+        {
+          "name": "legal_full_name",
+          "keys": [],
+          "type": "varchar(200)",
+          "nullable": false,
+          "description": "Закрытое настоящее ФИО."
+        },
+        {
+          "name": "birth_date",
+          "keys": [],
+          "type": "date",
+          "nullable": false,
+          "description": "Дата рождения."
+        },
+        {
+          "name": "avatar_config",
+          "keys": [],
+          "type": "jsonb NULL",
+          "nullable": true,
+          "description": "Ссылка/конфигурация аватара; точная модель уточняется вместе с лавкой/аватаром."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "active / suspended / blocked."
+        },
+        {
+          "name": "account_source",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "family_application / institutional_application."
+        },
+        {
+          "name": "cohort_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Когорта при институциональном канале."
+        },
+        {
+          "name": "external_brand_id",
+          "keys": [],
+          "type": "varchar(100) NULL",
+          "nullable": true,
+          "description": "Резерв под общую базу бренда."
+        },
+        {
+          "name": "created_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Организатор, создавший аккаунт."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата создания."
+        }
+      ]
+    },
+    {
+      "name": "child_onboarding",
+      "module": "M1",
+      "sourceAnchor": "_toc239371075",
+      "description": "Служебное состояние приветственного сценария ребёнка.",
+      "notes": [
+        "**Пояснения.** Сохранено из предыдущей структуры Дарьи; требованиям Антона не противоречит."
+      ],
+      "fields": [
+        {
+          "name": "child_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ссылка на children.id."
+        },
+        {
+          "name": "onboarding_completed",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Завершён ли сценарий."
+        },
+        {
+          "name": "onboarding_step",
+          "keys": [],
+          "type": "smallint",
+          "nullable": false,
+          "description": "Текущий шаг."
+        },
+        {
+          "name": "updated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Последнее изменение состояния."
+        }
+      ]
+    },
+    {
+      "name": "parent_children",
+      "module": "M1",
+      "sourceAnchor": "_toc239371076",
+      "description": "Постоянная связь Родитель↔Ребёнок, создаваемая организатором.",
+      "notes": [
+        "**Пояснения.** Связь не зависит от конкретной оплаты. Поля основного плательщика и управления подпиской удалены как дублирующие платёжную сущность. Для полной истории запросов и просмотров требуется общий журнал аудита; поля таблицы отражают текущее состояние доступа."
+      ],
+      "fields": [
+        {
+          "name": "parent_account_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Аккаунт с профилем Родителя."
+        },
+        {
+          "name": "child_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ребёнок."
+        },
+        {
+          "name": "relation_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "mother / father / guardian / school_representative."
+        },
+        {
+          "name": "can_view_browser_chat",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Текущий доступ к переписке; по умолчанию false."
+        },
+        {
+          "name": "chat_access_requested_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата последнего запроса родителя на доступ."
+        },
+        {
+          "name": "chat_access_decided_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Сотрудник, принявший решение по запросу."
+        },
+        {
+          "name": "chat_access_decided_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата решения."
+        },
+        {
+          "name": "child_notified_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата уведомления ребёнка о выдаче доступа, если уведомление применялось."
+        },
+        {
+          "name": "created_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Организатор, создавший связь."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата создания связи."
+        }
+      ]
+    },
+    {
+      "name": "consents",
+      "module": "M1",
+      "sourceAnchor": "_toc239371077",
+      "description": "История юридических согласий по ребёнку.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор согласия."
+        },
+        {
+          "name": "parent_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Родитель/представитель, выдавший согласие."
+        },
+        {
+          "name": "child_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ребёнок."
+        },
+        {
+          "name": "consent_type",
+          "keys": [],
+          "type": "varchar(50)",
+          "nullable": false,
+          "description": "personal_data / photo_video / blog_publication / marketing и др."
+        },
+        {
+          "name": "document_version",
+          "keys": [],
+          "type": "varchar(100)",
+          "nullable": false,
+          "description": "Версия документа/оферты."
+        },
+        {
+          "name": "granted_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата выдачи."
+        },
+        {
+          "name": "revoked_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата отзыва."
+        },
+        {
+          "name": "channel",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "app / paper / institution."
+        }
+      ]
+    },
+    {
+      "name": "organizations",
+      "module": "M1",
+      "sourceAnchor": "_toc239371078",
+      "description": "Организации для институционального канала и партнёрств.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор организации."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(255)",
+          "nullable": false,
+          "description": "Название."
+        },
+        {
+          "name": "organization_type",
+          "keys": [],
+          "type": "varchar(50)",
+          "nullable": false,
+          "description": "school / supplementary_education / sponsor_partner / other."
+        },
+        {
+          "name": "legal_details",
+          "keys": [],
+          "type": "jsonb NULL",
+          "nullable": true,
+          "description": "Юридические реквизиты до реального договора."
+        },
+        {
+          "name": "contract_status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "Статус договора."
+        }
+      ]
+    },
+    {
+      "name": "cohorts",
+      "module": "M1",
+      "sourceAnchor": "_toc239371079",
+      "description": "Группы/классы внутри организации.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор когорты."
+        },
+        {
+          "name": "organization_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Организация."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(200)",
+          "nullable": false,
+          "description": "Название группы/класса."
+        },
+        {
+          "name": "curator_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Персонал-куратор."
+        },
+        {
+          "name": "study_period_start",
+          "keys": [],
+          "type": "date NULL",
+          "nullable": true,
+          "description": "Начало учебного периода."
+        },
+        {
+          "name": "study_period_end",
+          "keys": [],
+          "type": "date NULL",
+          "nullable": true,
+          "description": "Окончание учебного периода."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "Состояние когорты."
+        }
+      ]
+    },
+    {
+      "name": "roles",
+      "module": "M2",
+      "sourceAnchor": "_toc239371080",
+      "description": "Справочник ролей персонала.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "smallint",
+          "nullable": false,
+          "description": "Идентификатор роли."
+        },
+        {
+          "name": "code",
+          "keys": [],
+          "type": "varchar(50)",
+          "nullable": false,
+          "description": "browser / organizer / admin / curator / methodist / video_specialist / moderator / game_designer / game_master."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(100)",
+          "nullable": false,
+          "description": "Человекочитаемое название."
+        }
+      ]
+    },
+    {
+      "name": "permissions",
+      "module": "M2",
+      "sourceAnchor": "_toc239371081",
+      "description": "Справочник разрешений RBAC.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор разрешения."
+        },
+        {
+          "name": "code",
+          "keys": [],
+          "type": "varchar(100)",
+          "nullable": false,
+          "description": "Например tasks.create, tasks.edit, tasks.approve_browser, tasks.approve_methodist, tasks.approve_game_master, tasks.archive, children.view_progress, dialog.core_nodes.edit, dialog.conditional_nodes.manage."
+        },
+        {
+          "name": "description",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Описание действия."
+        }
+      ]
+    },
+    {
+      "name": "role_permissions",
+      "module": "M2",
+      "sourceAnchor": "_toc239371082",
+      "description": "Связь Роль↔Разрешение.",
+      "notes": [
+        "**Пояснения.** Определяет права роли по умолчанию."
+      ],
+      "fields": [
+        {
+          "name": "role_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "smallint",
+          "nullable": false,
+          "description": "Роль."
+        },
+        {
+          "name": "permission_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Разрешение."
+        }
+      ]
+    },
+    {
+      "name": "staff_roles",
+      "module": "M2",
+      "sourceAnchor": "_toc239371083",
+      "description": "Назначения ролей персоналу с областью действия и историей.",
+      "notes": [
+        "**Пояснения.** Сохраняет историю передачи персонажей/мастерских между сотрудниками."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор назначения."
+        },
+        {
+          "name": "staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Аккаунт с профилем Персонала."
+        },
+        {
+          "name": "role_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "smallint",
+          "nullable": false,
+          "description": "Назначенная роль."
+        },
+        {
+          "name": "scope_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "character / workshop / organization_cohort / platform."
+        },
+        {
+          "name": "scope_id",
+          "keys": [],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Идентификатор объекта области; NULL для platform."
+        },
+        {
+          "name": "started_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Начало назначения."
+        },
+        {
+          "name": "ended_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Окончание назначения."
+        }
+      ]
+    },
+    {
+      "name": "subscription_plans",
+      "module": "M8",
+      "sourceAnchor": "_toc239371084",
+      "description": "Предварительный справочник тарифных предложений.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор тарифа."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "Название."
+        },
+        {
+          "name": "duration_days",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Стандартная длительность."
+        },
+        {
+          "name": "max_children",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Максимум детей по тарифу."
+        },
+        {
+          "name": "price_amount",
+          "keys": [],
+          "type": "numeric(10,2)",
+          "nullable": false,
+          "description": "Цена."
+        },
+        {
+          "name": "currency",
+          "keys": [],
+          "type": "char(3)",
+          "nullable": false,
+          "description": "Код валюты."
+        },
+        {
+          "name": "is_active",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Доступен ли для покупки."
+        }
+      ]
+    },
+    {
+      "name": "subscriptions",
+      "module": "M8",
+      "sourceAnchor": "_toc239371085",
+      "description": "Предварительная конкретная покупка подписки.",
+      "notes": [
+        "**Статус.** Предварительная модель Дарьи."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор подписки."
+        },
+        {
+          "name": "parent_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Покупатель с профилем Родителя."
+        },
+        {
+          "name": "plan_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Тариф."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "active / expired / cancelled и др."
+        },
+        {
+          "name": "children_limit",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Лимит детей, зафиксированный при покупке."
+        },
+        {
+          "name": "started_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Начало действия."
+        },
+        {
+          "name": "expires_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Окончание действия."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата создания."
+        }
+      ]
+    },
+    {
+      "name": "subscription_children",
+      "module": "M8",
+      "sourceAnchor": "_toc239371086",
+      "description": "Предварительная связь подписки с детскими аккаунтами.",
+      "notes": [
+        "**Статус.** Предварительная модель Дарьи.",
+        "**Пояснения.** Не заменяет постоянную parent_children."
+      ],
+      "fields": [
+        {
+          "name": "subscription_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Подписка."
+        },
+        {
+          "name": "child_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ребёнок, которому подписка даёт доступ."
+        }
+      ]
+    },
+    {
+      "name": "access_applications",
+      "module": "M1",
+      "sourceAnchor": "_access_applications",
+      "description": "Заявки семей и организаций до создания кабинетов.",
+      "notes": [
+        "**Пояснения.** Это операционная сущность первого этапа, а не полноценная модель договоров и платежей. После создания кабинетов чувствительные данные заявки должны обрабатываться по политике хранения персональных данных."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор заявки."
+        },
+        {
+          "name": "applicant_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "family / organization."
+        },
+        {
+          "name": "applicant_name",
+          "keys": [],
+          "type": "varchar(200)",
+          "nullable": false,
+          "description": "ФИО заявителя или контактного лица."
+        },
+        {
+          "name": "email",
+          "keys": [],
+          "type": "varchar(254) NULL",
+          "nullable": true,
+          "description": "Email для договора и реквизитов."
+        },
+        {
+          "name": "messenger_contact",
+          "keys": [],
+          "type": "varchar(255) NULL",
+          "nullable": true,
+          "description": "Контакт в мессенджере."
+        },
+        {
+          "name": "organization_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Организация, если она уже заведена в системе."
+        },
+        {
+          "name": "organization_data",
+          "keys": [],
+          "type": "jsonb NULL",
+          "nullable": true,
+          "description": "Данные новой организации из формы до создания organizations."
+        },
+        {
+          "name": "children_data",
+          "keys": [],
+          "type": "jsonb",
+          "nullable": false,
+          "description": "Данные одного или нескольких детей из заявки до создания children."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "new / contract_sent / awaiting_payment / paid / accounts_created / rejected."
+        },
+        {
+          "name": "processed_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Организатор, обрабатывающий заявку."
+        },
+        {
+          "name": "contract_sent_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Когда отправлен договор."
+        },
+        {
+          "name": "payment_confirmed_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Когда организатор подтвердил оплату."
+        },
+        {
+          "name": "accounts_created_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Когда по заявке созданы кабинеты."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата подачи заявки."
+        },
+        {
+          "name": "updated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата последнего изменения."
+        }
+      ]
+    },
+    {
+      "name": "media",
+      "module": "M7",
+      "sourceAnchor": "_toc239371087",
+      "description": "Единая сущность изображений, видео, аудио и других файлов платформы.",
+      "notes": [
+        "**Пояснения.** Используется портретами, артом мастерских, материалами заданий и результатами."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор медиа."
+        },
+        {
+          "name": "media_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "image / video / audio / document / other."
+        },
+        {
+          "name": "storage_key",
+          "keys": [],
+          "type": "varchar(500)",
+          "nullable": false,
+          "description": "Ключ во внешнем хранилище."
+        },
+        {
+          "name": "original_name",
+          "keys": [],
+          "type": "varchar(255)",
+          "nullable": false,
+          "description": "Исходное имя файла."
+        },
+        {
+          "name": "mime_type",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "MIME-тип."
+        },
+        {
+          "name": "size_bytes",
+          "keys": [],
+          "type": "bigint",
+          "nullable": false,
+          "description": "Размер."
+        },
+        {
+          "name": "uploaded_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Сотрудник-загрузчик; NULL для системного импорта/детских материалов."
+        },
+        {
+          "name": "moderation_status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "Статус модерации; резерв на будущее."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата загрузки."
+        }
+      ]
+    },
+    {
+      "name": "labels",
+      "module": "M7",
+      "sourceAnchor": "_toc239371088",
+      "description": "Общий словарь содержательных Меток.",
+      "notes": [
+        "**Пояснения.** Один словарь для мастерских и заданий; не путать с игровой валютой «теги»."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор метки."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(100)",
+          "nullable": false,
+          "description": "Название."
+        },
+        {
+          "name": "slug",
+          "keys": [],
+          "type": "varchar(100)",
+          "nullable": false,
+          "description": "Системное значение."
+        }
+      ]
+    },
+    {
+      "name": "workshop_categories",
+      "module": "M3",
+      "sourceAnchor": "_toc239371089",
+      "description": "Справочник категорий мастерских.",
+      "notes": [
+        "**Статус.** Поля slug/icon сохранены как вариант Дарьи; см. Приложение В."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор категории."
+        },
+        {
+          "name": "code",
+          "keys": [],
+          "type": "varchar(50)",
+          "nullable": false,
+          "description": "Системный код категории."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(100)",
+          "nullable": false,
+          "description": "Название."
+        },
+        {
+          "name": "accent_color",
+          "keys": [],
+          "type": "varchar(30) NULL",
+          "nullable": true,
+          "description": "Цвет/акцент интерфейса."
+        },
+        {
+          "name": "slug",
+          "keys": [],
+          "type": "varchar(100) NULL",
+          "nullable": true,
+          "description": "Технический slug — вариант Дарьи, сохранён до согласования."
+        },
+        {
+          "name": "icon",
+          "keys": [],
+          "type": "varchar(255) NULL",
+          "nullable": true,
+          "description": "Иконка — вариант Дарьи, сохранён до согласования."
+        },
+        {
+          "name": "sort_order",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Порядок отображения."
+        }
+      ]
+    },
+    {
+      "name": "workshops",
+      "module": "M3",
+      "sourceAnchor": "_toc239371090",
+      "description": "Основная сущность мастерской.",
+      "notes": [
+        "**Пояснения.** Реальный браузер не хранится в workshop: связь идёт через staff_roles и персонажа."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор мастерской."
+        },
+        {
+          "name": "category_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Основная категория."
+        },
+        {
+          "name": "art_media_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Арт/фото через media."
+        },
+        {
+          "name": "primary_character_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Лицевой персонаж для карточки."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "Название."
+        },
+        {
+          "name": "slug",
+          "keys": [],
+          "type": "varchar(150) NULL",
+          "nullable": true,
+          "description": "URL/API slug."
+        },
+        {
+          "name": "short_description",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Краткое описание."
+        },
+        {
+          "name": "description",
+          "keys": [],
+          "type": "text NULL",
+          "nullable": true,
+          "description": "Полное описание."
+        },
+        {
+          "name": "mastery_goal",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Порог прогресса до уровня «Мастер»."
+        },
+        {
+          "name": "task_token_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "mastery_tokens / action_tokens."
+        },
+        {
+          "name": "max_children",
+          "keys": [],
+          "type": "int NULL",
+          "nullable": true,
+          "description": "Вместимость/нагрузка."
+        },
+        {
+          "name": "offer_count",
+          "keys": [],
+          "type": "smallint NULL",
+          "nullable": true,
+          "description": "Обычное число одновременно предлагаемых заданий."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "preparing / active / archived."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата создания."
+        },
+        {
+          "name": "updated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата изменения."
+        }
+      ]
+    },
+    {
+      "name": "workshop_labels",
+      "module": "M3",
+      "sourceAnchor": "_toc239371091",
+      "description": "Связь Мастерская↔Метка.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "workshop_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Мастерская."
+        },
+        {
+          "name": "label_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Метка."
+        }
+      ]
+    },
+    {
+      "name": "characters",
+      "module": "M3",
+      "sourceAnchor": "_toc239371092",
+      "description": "Игровые персонажи, независимые от мастерской и сотрудника.",
+      "notes": [
+        "**Пояснения.** Один персонаж может вести линии в разных мастерских."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор персонажа."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "Имя."
+        },
+        {
+          "name": "title",
+          "keys": [],
+          "type": "varchar(150) NULL",
+          "nullable": true,
+          "description": "Роль/титул."
+        },
+        {
+          "name": "portrait_media_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Портрет."
+        },
+        {
+          "name": "legend",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Характер/легенда/голос для методических целей."
+        },
+        {
+          "name": "is_active",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Активен ли персонаж."
+        }
+      ]
+    },
+    {
+      "name": "task_lines",
+      "module": "M3",
+      "sourceAnchor": "_toc239371093",
+      "description": "Линии внутри мастерской.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор линии."
+        },
+        {
+          "name": "workshop_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Мастерская."
+        },
+        {
+          "name": "character_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ведущий персонаж линии."
+        },
+        {
+          "name": "background_media_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Фоновое изображение диалоговой сцены Линии."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "Название линии."
+        },
+        {
+          "name": "line_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "main / secondary."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "active / archived."
+        },
+        {
+          "name": "sort_order",
+          "keys": [],
+          "type": "int NULL",
+          "nullable": true,
+          "description": "Порядок отображения."
+        }
+      ]
+    },
+    {
+      "name": "dialogue_node_types",
+      "module": "M3",
+      "sourceAnchor": "_toc239371094",
+      "description": "Расширяемый справочник типов узлов базового/вариативного диалога.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор типа."
+        },
+        {
+          "name": "code",
+          "keys": [],
+          "type": "varchar(50)",
+          "nullable": false,
+          "description": "start / hello / place / learn / hard / reward / offer / refuse / later / будущие типы."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "Название/подсказка."
+        },
+        {
+          "name": "is_required",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Обязателен ли базовый узел."
+        },
+        {
+          "name": "feature_scope",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "core / quest / expedition / event и др."
+        }
+      ]
+    },
+    {
+      "name": "dialogue_nodes",
+      "module": "M3",
+      "sourceAnchor": "_toc239371095",
+      "description": "Тексты базовых узлов вступительного диалога конкретной линии.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "line_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Линия."
+        },
+        {
+          "name": "node_type_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Тип узла категории core."
+        },
+        {
+          "name": "text",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Обычная реплика."
+        },
+        {
+          "name": "repeat_intro_text",
+          "keys": [],
+          "type": "text NULL",
+          "nullable": true,
+          "description": "Альтернативный текст при повторном знакомстве."
+        },
+        {
+          "name": "character_figure_media_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Фигура/поза персонажа, показываемая на фоне Линии в этом узле."
+        }
+      ]
+    },
+    {
+      "name": "condition_types",
+      "module": "M3",
+      "sourceAnchor": "_toc239371096",
+      "description": "Расширяемый справочник типов условий для вариативного диалога.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор."
+        },
+        {
+          "name": "code",
+          "keys": [],
+          "type": "varchar(80)",
+          "nullable": false,
+          "description": "has_active_quest / has_artifact / workshop_level_reached / tag_balance_at_least / date_range и др."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "Название."
+        },
+        {
+          "name": "description",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Что проверяет условие и какие параметры ожидает."
+        }
+      ]
+    },
+    {
+      "name": "dialogue_response_types",
+      "module": "M3",
+      "sourceAnchor": "_dialogue_response_types",
+      "description": "Расширяемый справочник форм ответа ребёнка на условную реплику.",
+      "notes": [
+        "**Пояснения.** Новый тип включается только после технической реализации и проверки безопасных рамок конструктора."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор формы ответа."
+        },
+        {
+          "name": "code",
+          "keys": [],
+          "type": "varchar(50)",
+          "nullable": false,
+          "description": "button / text / file / single_choice / multiple_choice."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "Название для конструктора."
+        },
+        {
+          "name": "is_enabled",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Доступен ли тип авторам контента. В первом контуре true только для button и text."
+        },
+        {
+          "name": "config_schema",
+          "keys": [],
+          "type": "jsonb NULL",
+          "nullable": true,
+          "description": "Допустимые параметры формы: подсказка, ограничения, варианты выбора и др."
+        }
+      ]
+    },
+    {
+      "name": "conditional_dialogue_nodes",
+      "module": "M3",
+      "sourceAnchor": "_toc239371097",
+      "description": "Дополнительные условные формы ответа и реплики в диалоге линии.",
+      "notes": [
+        "**Пояснения.** Фактические начисления при выборе узла записываются в accruals."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор узла."
+        },
+        {
+          "name": "line_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Линия."
+        },
+        {
+          "name": "node_type_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Тип условного узла."
+        },
+        {
+          "name": "anchor_node_type_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Базовый узел, к которому крепится форма ответа."
+        },
+        {
+          "name": "response_type_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Форма ответа из dialogue_response_types."
+        },
+        {
+          "name": "response_config",
+          "keys": [],
+          "type": "jsonb NULL",
+          "nullable": true,
+          "description": "Настройки конкретной формы: подпись кнопки, placeholder, варианты и ограничения."
+        },
+        {
+          "name": "text",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Реплика персонажа."
+        },
+        {
+          "name": "character_figure_media_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Фигура/поза персонажа для этого условного узла."
+        },
+        {
+          "name": "condition_type_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Тип условия."
+        },
+        {
+          "name": "condition_params",
+          "keys": [],
+          "type": "jsonb",
+          "nullable": false,
+          "description": "Параметры проверки."
+        },
+        {
+          "name": "target_node_type_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Переход; NULL = возврат к точке крепления."
+        },
+        {
+          "name": "sort_order",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Порядок среди условных вариантов."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "active / disabled."
+        },
+        {
+          "name": "reward_tokens",
+          "keys": [],
+          "type": "int NULL",
+          "nullable": true,
+          "description": "Количество токенов; фактический тип определяется мастерской."
+        },
+        {
+          "name": "reward_tags",
+          "keys": [],
+          "type": "int NULL",
+          "nullable": true,
+          "description": "Награда игровой валютой «теги»."
+        },
+        {
+          "name": "created_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Кем создано."
+        },
+        {
+          "name": "updated_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Кем изменено."
+        },
+        {
+          "name": "updated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата изменения."
+        }
+      ]
+    },
+    {
+      "name": "child_workshops",
+      "module": "M5",
+      "sourceAnchor": "_toc239371098",
+      "description": "Членство ребёнка в мастерской и быстрый кэш прогресса.",
+      "notes": [
+        "**Пояснения.** Источник истины для токенов — accruals."
+      ],
+      "fields": [
+        {
+          "name": "child_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ребёнок."
+        },
+        {
+          "name": "workshop_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Мастерская."
+        },
+        {
+          "name": "enrolled_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата записи."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "active / left."
+        },
+        {
+          "name": "workshop_token_cache",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Кэш токенов того типа, который задан workshop.task_token_type."
+        },
+        {
+          "name": "mastery_certificate_issued_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата выдачи сертификата после достижения mastery_goal."
+        },
+        {
+          "name": "mastery_certificate_media_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Сформированный файл сертификата, если он сохраняется как Медиа."
+        }
+      ]
+    },
+    {
+      "name": "tasks",
+      "module": "M4",
+      "sourceAnchor": "_toc239371099",
+      "description": "Шаблон учебного задания в банке.",
+      "notes": [
+        "**Пояснения.** При наличии трёх актуальных галочек система автоматически ставит published и published_at. Отзыв галочки должен сохраняться в аудите. Награды и сценарные реплики хранятся отдельными таблицами."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор задания."
+        },
+        {
+          "name": "workshop_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Мастерская."
+        },
+        {
+          "name": "task_line_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Линия."
+        },
+        {
+          "name": "title",
+          "keys": [],
+          "type": "varchar(200)",
+          "nullable": false,
+          "description": "Название."
+        },
+        {
+          "name": "short_description",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Краткое описание."
+        },
+        {
+          "name": "step_number",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Номер шага."
+        },
+        {
+          "name": "duration_minutes",
+          "keys": [],
+          "type": "int NULL",
+          "nullable": true,
+          "description": "15/30/45/60/90/120/180 или NULL."
+        },
+        {
+          "name": "repeat_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "single / repeatable."
+        },
+        {
+          "name": "check_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "manual / automatic."
+        },
+        {
+          "name": "participant_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "individual / pair_group."
+        },
+        {
+          "name": "format_type",
+          "keys": [],
+          "type": "varchar(50)",
+          "nullable": false,
+          "description": "online / online_tools / online_parent / onsite_workshop / intensive / excursion."
+        },
+        {
+          "name": "has_time_limit",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Есть ли ограничение."
+        },
+        {
+          "name": "time_limit_value",
+          "keys": [],
+          "type": "varchar(100) NULL",
+          "nullable": true,
+          "description": "Например «3 дня»."
+        },
+        {
+          "name": "answer_type",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "photo / video / text / link / other."
+        },
+        {
+          "name": "publication_mode",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "no / yes / child_choice."
+        },
+        {
+          "name": "sponsor_organization_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Спонсор-партнёр."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "draft / published / archived."
+        },
+        {
+          "name": "created_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Автор."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата создания."
+        },
+        {
+          "name": "browser_approved_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Браузер, поставивший галочку готовности."
+        },
+        {
+          "name": "browser_approved_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата галочки браузера."
+        },
+        {
+          "name": "methodist_approved_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Методист, поставивший галочку готовности."
+        },
+        {
+          "name": "methodist_approved_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата галочки методиста."
+        },
+        {
+          "name": "game_master_approved_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Гейм-мастер, поставивший галочку готовности."
+        },
+        {
+          "name": "game_master_approved_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата галочки гейм-мастера."
+        },
+        {
+          "name": "published_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата публикации."
+        },
+        {
+          "name": "archived_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Организатор, отправивший задание в архив."
+        },
+        {
+          "name": "archived_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата архивации."
+        },
+        {
+          "name": "updated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Последнее изменение."
+        }
+      ]
+    },
+    {
+      "name": "task_labels",
+      "module": "M4",
+      "sourceAnchor": "_toc239371100",
+      "description": "Связь Задание↔Метка.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "task_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Задание."
+        },
+        {
+          "name": "label_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Общая содержательная метка."
+        }
+      ]
+    },
+    {
+      "name": "task_variants",
+      "module": "M4",
+      "sourceAnchor": "_toc239371101",
+      "description": "Дополнительные варианты повторяющегося задания.",
+      "notes": [
+        "**Пояснения.** Видео и материалы варианта связываются через выбранную модель task_materials.variant_id."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор варианта."
+        },
+        {
+          "name": "task_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Базовое задание."
+        },
+        {
+          "name": "variant_number",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Номер варианта; записи обычно начинаются со 2."
+        },
+        {
+          "name": "variant_text",
+          "keys": [],
+          "type": "text NULL",
+          "nullable": true,
+          "description": "Чем вариант отличается/его дополнительный текст."
+        },
+        {
+          "name": "condition_description",
+          "keys": [],
+          "type": "text NULL",
+          "nullable": true,
+          "description": "Условие применения, если требуется."
+        },
+        {
+          "name": "is_active",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Активен ли вариант."
+        }
+      ]
+    },
+    {
+      "name": "task_dialogues",
+      "module": "M4",
+      "sourceAnchor": "_toc239371102",
+      "description": "Согласованная расширяемая модель шаблонных реплик персонажа по этапам задания.",
+      "notes": [
+        "**Пояснения.** Выбран вариант task_dialogues. Задание принадлежит конкретной Линии через task_line_id, поэтому его реплики редактируются независимо; при переносе шаблона в другую Линию создаётся отдельный набор строк."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор реплики."
+        },
+        {
+          "name": "task_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Задание."
+        },
+        {
+          "name": "variant_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Вариант повтора; NULL — общая реплика."
+        },
+        {
+          "name": "dialogue_type",
+          "keys": [],
+          "type": "varchar(40)",
+          "nullable": false,
+          "description": "offer / selected / accepted / refused / received / success / rework и др."
+        },
+        {
+          "name": "text",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Текст реплики."
+        },
+        {
+          "name": "sort_order",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Порядок."
+        }
+      ]
+    },
+    {
+      "name": "task_materials",
+      "module": "M4",
+      "sourceAnchor": "_toc239371103",
+      "description": "Общие материалы задания и материалы вариантов в одной таблице — текущий вариант Дарьи.",
+      "notes": [
+        "**Пояснения.** При публикации задания должна существовать обязательная video_instruction. По техническому решению используется одна таблица: NULL в variant_id обозначает общий материал, заполненное значение — материал варианта."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор связи/материала."
+        },
+        {
+          "name": "task_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Задание."
+        },
+        {
+          "name": "variant_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Вариант; NULL — общий материал."
+        },
+        {
+          "name": "media_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Медиа."
+        },
+        {
+          "name": "material_type",
+          "keys": [],
+          "type": "varchar(40)",
+          "nullable": false,
+          "description": "video_instruction / material / template / example и др."
+        },
+        {
+          "name": "sort_order",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Порядок."
+        }
+      ]
+    },
+    {
+      "name": "task_reference_answers",
+      "module": "M4",
+      "sourceAnchor": "_toc239371104",
+      "description": "Эталонные ответы для автоматической проверки.",
+      "notes": [
+        "**Пояснения.** Используется только при check_type = automatic."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор эталона."
+        },
+        {
+          "name": "task_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Задание."
+        },
+        {
+          "name": "answer",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Допустимая точная формулировка."
+        },
+        {
+          "name": "sort_order",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Порядок."
+        }
+      ]
+    },
+    {
+      "name": "task_rewards",
+      "module": "M4",
+      "sourceAnchor": "_toc239371105",
+      "description": "Настраиваемые награды задания — текущий вариант Дарьи.",
+      "notes": [
+        "**Пояснения.** Антон предлагает фиксированные поля «токены_мастерства» и «теги» на tasks с переинтерпретацией токенов через workshop.task_token_type. См. Приложение В."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор награды."
+        },
+        {
+          "name": "task_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Задание."
+        },
+        {
+          "name": "reward_type",
+          "keys": [],
+          "type": "varchar(40)",
+          "nullable": false,
+          "description": "tags / mastery_tokens / action_tokens / item / иной тип."
+        },
+        {
+          "name": "amount",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Количество."
+        },
+        {
+          "name": "item_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Предмет, если награда предметная."
+        }
+      ]
+    },
+    {
+      "name": "child_tasks",
+      "module": "M5",
+      "sourceAnchor": "_toc239371106",
+      "description": "Экземпляр/состояние задания, создаваемое только после принятия ребёнком.",
+      "notes": [
+        "**Пояснения.** Просмотр и предпросмотр не создают child_tasks; при необходимости они учитываются отдельной аналитикой."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор экземпляра."
+        },
+        {
+          "name": "child_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ребёнок."
+        },
+        {
+          "name": "task_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Задание."
+        },
+        {
+          "name": "variant_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Вариант повторного задания."
+        },
+        {
+          "name": "status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "accepted / submitted / under_review / rework / completed / declined."
+        },
+        {
+          "name": "assignment_number",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Номер взятия/назначения."
+        },
+        {
+          "name": "reward_accrued",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Зафиксирован ли факт начисления награды."
+        },
+        {
+          "name": "accepted_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Когда принято."
+        },
+        {
+          "name": "submitted_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Последняя отправка."
+        },
+        {
+          "name": "completed_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Завершение."
+        },
+        {
+          "name": "declined_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Отказ после принятия."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Создание записи."
+        },
+        {
+          "name": "updated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Изменение."
+        }
+      ]
+    },
+    {
+      "name": "task_submissions",
+      "module": "M5",
+      "sourceAnchor": "_toc239371107",
+      "description": "Отдельная попытка отправки результата.",
+      "notes": [
+        "**Пояснения.** Все попытки сохраняются."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор попытки."
+        },
+        {
+          "name": "child_task_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Взятое/назначенное задание."
+        },
+        {
+          "name": "attempt_number",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Номер попытки."
+        },
+        {
+          "name": "submitted_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата отправки."
+        },
+        {
+          "name": "text_answer",
+          "keys": [],
+          "type": "text NULL",
+          "nullable": true,
+          "description": "Текстовый ответ."
+        },
+        {
+          "name": "link_answer",
+          "keys": [],
+          "type": "varchar(1000) NULL",
+          "nullable": true,
+          "description": "Ссылка."
+        },
+        {
+          "name": "publication_choice",
+          "keys": [],
+          "type": "boolean NULL",
+          "nullable": true,
+          "description": "Выбор ребёнка, если publication_mode = child_choice."
+        },
+        {
+          "name": "review_status",
+          "keys": [],
+          "type": "varchar(30)",
+          "nullable": false,
+          "description": "under_review / accepted / rework."
+        },
+        {
+          "name": "checked_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Кем проверено."
+        },
+        {
+          "name": "checked_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата проверки."
+        },
+        {
+          "name": "comment_success",
+          "keys": [],
+          "type": "text NULL",
+          "nullable": true,
+          "description": "Что получилось."
+        },
+        {
+          "name": "comment_improve",
+          "keys": [],
+          "type": "text NULL",
+          "nullable": true,
+          "description": "Что доработать; только для rework."
+        }
+      ]
+    },
+    {
+      "name": "submission_media",
+      "module": "M5",
+      "sourceAnchor": "_toc239371108",
+      "description": "Согласованная связь для нескольких медиафайлов одной попытки.",
+      "notes": [
+        "**Пояснения.** Вариант с отдельной M2M-таблицей подтверждён Антоном."
+      ],
+      "fields": [
+        {
+          "name": "submission_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Попытка."
+        },
+        {
+          "name": "media_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Медиа."
+        }
+      ]
+    },
+    {
+      "name": "task_messages",
+      "module": "M5",
+      "sourceAnchor": "_toc239371109",
+      "description": "Свободная переписка вокруг конкретного взятого задания.",
+      "notes": [
+        "**Пояснения.** Отдельно от формальной оценки попытки."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор сообщения."
+        },
+        {
+          "name": "child_task_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Взятое задание."
+        },
+        {
+          "name": "sender_type",
+          "keys": [],
+          "type": "varchar(20)",
+          "nullable": false,
+          "description": "child / browser / system."
+        },
+        {
+          "name": "sender_id",
+          "keys": [],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "child_id или staff_account_id; NULL для system."
+        },
+        {
+          "name": "text",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Текст сообщения."
+        },
+        {
+          "name": "sent_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата отправки."
+        },
+        {
+          "name": "read_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата прочтения."
+        }
+      ]
+    },
+    {
+      "name": "accrual_types",
+      "module": "M6",
+      "sourceAnchor": "_toc239371110",
+      "description": "Расширяемый справочник типов начислений.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор."
+        },
+        {
+          "name": "code",
+          "keys": [],
+          "type": "varchar(50)",
+          "nullable": false,
+          "description": "tags / mastery_tokens / action_tokens / reputation."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(100)",
+          "nullable": false,
+          "description": "Название."
+        },
+        {
+          "name": "can_be_negative",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Разрешены ли отрицательные суммы."
+        }
+      ]
+    },
+    {
+      "name": "accrual_sources",
+      "module": "M6",
+      "sourceAnchor": "_toc239371111",
+      "description": "Расширяемый справочник источников начисления.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор источника."
+        },
+        {
+          "name": "code",
+          "keys": [],
+          "type": "varchar(80)",
+          "nullable": false,
+          "description": "task_completion / task_refusal / conditional_dialogue_node / manual_adjustment / event_participation / blog_post / shop_purchase."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "Название."
+        }
+      ]
+    },
+    {
+      "name": "accruals",
+      "module": "M6",
+      "sourceAnchor": "_toc239371112",
+      "description": "Единый журнал всех изменений игровой экономики.",
+      "notes": [
+        "**Пояснения.** Источник истины для тегов, токенов и репутации."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор записи."
+        },
+        {
+          "name": "child_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ребёнок."
+        },
+        {
+          "name": "accrual_type_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Тип начисления."
+        },
+        {
+          "name": "amount",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Сумма; может быть отрицательной по правилам типа."
+        },
+        {
+          "name": "workshop_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Мастерская; обязательна для mastery_tokens и action_tokens, nullable для других типов."
+        },
+        {
+          "name": "character_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Персонаж для репутации; для reputation обязателен."
+        },
+        {
+          "name": "source_type_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Источник."
+        },
+        {
+          "name": "source_id",
+          "keys": [],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "ID конкретной записи-причины."
+        },
+        {
+          "name": "description",
+          "keys": [],
+          "type": "text NULL",
+          "nullable": true,
+          "description": "Человекочитаемое описание истории."
+        },
+        {
+          "name": "created_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата."
+        },
+        {
+          "name": "awarded_by_staff_account_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Кем начислено вручную; NULL для автоматических событий."
+        }
+      ]
+    },
+    {
+      "name": "child_characters",
+      "module": "M6",
+      "sourceAnchor": "_toc239371113",
+      "description": "Кэш репутации по персонажу и факт первого знакомства.",
+      "notes": [
+        "**Пояснения.** Общая репутация ребёнка не хранится как независимое значение."
+      ],
+      "fields": [
+        {
+          "name": "child_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ребёнок."
+        },
+        {
+          "name": "character_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Персонаж."
+        },
+        {
+          "name": "reputation_cache",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Сумма репутационных записей accruals для пары; начальное значение 0, первый контур ограничивает диапазон -5…+5."
+        },
+        {
+          "name": "first_met_at",
+          "keys": [],
+          "type": "timestamptz NULL",
+          "nullable": true,
+          "description": "Дата первого знакомства."
+        },
+        {
+          "name": "updated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Обновление кэша."
+        }
+      ]
+    },
+    {
+      "name": "child_characteristics",
+      "module": "M6",
+      "sourceAnchor": "_toc239371114",
+      "description": "Кэш верхнеуровневых характеристик ребёнка.",
+      "notes": [
+        "**Пояснения.** Все значения производны от accruals/child_characters."
+      ],
+      "fields": [
+        {
+          "name": "child_id",
+          "keys": [
+            "PK",
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Ребёнок."
+        },
+        {
+          "name": "tag_balance_cache",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Баланс тегов."
+        },
+        {
+          "name": "mastery_tokens_cache",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Сумма токенов мастерства."
+        },
+        {
+          "name": "action_tokens_cache",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Сумма токенов действия."
+        },
+        {
+          "name": "total_reputation_cache",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Сумма репутаций по всем персонажам."
+        },
+        {
+          "name": "updated_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата пересчёта."
+        }
+      ]
+    },
+    {
+      "name": "items",
+      "module": "M6",
+      "sourceAnchor": "_toc239371115",
+      "description": "Предварительный каталог игровых предметов и артефактов.",
+      "notes": [],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор предмета."
+        },
+        {
+          "name": "name",
+          "keys": [],
+          "type": "varchar(150)",
+          "nullable": false,
+          "description": "Название."
+        },
+        {
+          "name": "description",
+          "keys": [],
+          "type": "text",
+          "nullable": false,
+          "description": "Описание."
+        },
+        {
+          "name": "image_media_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Изображение."
+        },
+        {
+          "name": "item_type",
+          "keys": [],
+          "type": "varchar(40)",
+          "nullable": false,
+          "description": "Тип."
+        },
+        {
+          "name": "rarity",
+          "keys": [],
+          "type": "varchar(30) NULL",
+          "nullable": true,
+          "description": "Редкость."
+        },
+        {
+          "name": "is_active",
+          "keys": [],
+          "type": "boolean",
+          "nullable": false,
+          "description": "Доступен ли предмет."
+        }
+      ]
+    },
+    {
+      "name": "child_items",
+      "module": "M6",
+      "sourceAnchor": "_toc239371116",
+      "description": "Предварительный инвентарь ребёнка.",
+      "notes": [
+        "**Статус.** Предварительный задел Дарьи."
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "keys": [
+            "PK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Идентификатор записи."
+        },
+        {
+          "name": "child_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Владелец."
+        },
+        {
+          "name": "item_id",
+          "keys": [
+            "FK"
+          ],
+          "type": "uuid",
+          "nullable": false,
+          "description": "Предмет."
+        },
+        {
+          "name": "quantity",
+          "keys": [],
+          "type": "int",
+          "nullable": false,
+          "description": "Количество."
+        },
+        {
+          "name": "source_type",
+          "keys": [],
+          "type": "varchar(40) NULL",
+          "nullable": true,
+          "description": "Тип источника получения."
+        },
+        {
+          "name": "source_id",
+          "keys": [],
+          "type": "uuid NULL",
+          "nullable": true,
+          "description": "Объект-источник."
+        },
+        {
+          "name": "obtained_at",
+          "keys": [],
+          "type": "timestamptz",
+          "nullable": false,
+          "description": "Дата получения."
+        }
+      ]
+    }
+  ]
+}

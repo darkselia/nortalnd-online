@@ -1,0 +1,42 @@
+# IDE and OS
+.idea/
+**/.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local product materials (not part of the repository)
+/Прототип сайта/
+/Структура данных/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.local
+
+# Python / Django
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+db.sqlite3
+*.sqlite3
+staticfiles/
+media/
+
+# Node / Nuxt
+node_modules/
+.nuxt/
+.output/
+.nitro/
+.cache/
+coverage/
+playwright-report/
+test-results/
+*.log
