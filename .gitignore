@@ -5,9 +5,6 @@
 .DS_Store
 Thumbs.db
 
-# Local product materials (not part of the repository)
-/Прототип сайта/
-/Структура данных/
 
 # Secrets and local configuration
 .env
