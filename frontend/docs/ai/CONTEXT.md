@@ -6,9 +6,9 @@
 
 - Создан Nuxt starter: Nuxt 4.5.2, Nuxt UI 4.11, Pinia, Tailwind CSS 4 и TypeScript.
 - Локальный Node при сверке — 24.21.0, npm — 11.19.0. Поле `packageManager` в `package.json` сейчас указывает `npm@3.37.0` и не соответствует реальному npm; исправить его отдельной задачей до стандартизации установки и CI.
-- Реальные scripts: `dev`, `build`, `preview`, `postinstall`, `lint`, `typecheck`.
+- Реальные scripts: `dev`, `build`, `preview`, `postinstall`, `lint`, `typecheck`, `test` (`vitest run --passWithNoTests`).
 - В `app.vue` и `pages/index.vue` пока стандартный англоязычный Nuxt UI шаблон. Он не является дизайном или функцией «Нортландии».
-- Vitest, Playwright, API client и generated OpenAPI types пока не добавлены. Работающего Django API и согласованных endpoints пока нет.
+- Vitest установлен, но продуктовых unit-тестов пока нет; `npm test` явно сообщает об их отсутствии. Playwright, API client и generated OpenAPI types пока не добавлены. Прикладных Django API endpoints пока нет.
 - Git-репозиторий находится уровнем выше, в `nortland-online/`.
 
 ## Целевой стек и структура
