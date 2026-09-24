@@ -1,14 +1,14 @@
 # Контекст backend «Нортландии онлайн»
 
-Дата сверки: 2026-09-14. Этот файл самодостаточен для IDE, открытой только на `backend/`.
+Дата сверки: 2026-09-24. Этот файл самодостаточен для IDE, открытой только на `backend/`.
 
 ## Текущее состояние
 
 - Есть стандартный каркас Django: `manage.py`, пакет конфигурации `backend/`, admin endpoint и папка `templates/`.
 - `settings.py` читает `backend/.env` через `django-environ`. Версионируемый шаблон — `backend/.env.example`; локальный `.env` исключён из Git. PostgreSQL 16 запускается сервисом `postgres` из корневого `compose.yaml`; контейнер и Django используют общие переменные `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST` и `POSTGRES_PORT` без единой строки подключения.
-- Утверждённая версия проекта — Django 6.1.1 на Python 3.13. Перед установкой зависимостей проверить interpreter PyCharm; зависимости зафиксированы в `requirements.txt`.
-- Системный Python при сверке — 3.13.9; Django в системном интерпретаторе не установлен. PyCharm может использовать другое окружение — проверять выбранный interpreter.
-- `requirements.txt` фиксирует Django и зависимости утверждённого runtime-стека: DRF, Psycopg, `django-environ`, `drf-spectacular`, Celery/Redis и `django-storages`/S3. Прикладные DRF endpoints, OpenAPI, фоновые задачи и S3 storage ещё не подключены; тестовая инфраструктура отсутствует.
+- Утверждённая версия проекта — Django 6.1.1 на Python 3.13. Перед запуском Python-команд проверить interpreter PyCharm. `requirements.txt` содержит зависимости работающего приложения, а `requirements-dev.txt` добавляет pytest, pytest-django и Ruff. `environment.yml` устанавливает dev-набор при создании Conda-окружения; в уже активированном Conda или venv зависимости устанавливаются через `python -m pip install -r requirements-dev.txt`.
+- PostgreSQL — единственная настроенная БД. Django запускается локально через `python manage.py runserver`, PostgreSQL 16 — в Docker Compose. Из корня репозитория база запускается командой `docker compose --env-file backend/.env up -d --wait postgres`.
+- DRF и `drf-spectacular` подключены: схема доступна по `/api/schema/`, Swagger UI — по `/api/docs/`. Прикладных API endpoints, фоновых задач и S3 storage пока нет. Технический pytest-тест проверяет подключение к отдельной тестовой БД PostgreSQL.
 - Git-репозиторий находится уровнем выше, в `nortland-online/`.
 
 ## Целевой стек
