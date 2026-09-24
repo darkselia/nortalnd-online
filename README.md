@@ -1,52 +1,145 @@
 # Нортландия онлайн
 
-«Нортландия онлайн» — монорепозиторий образовательной игровой платформы для детской школы. В продукте дети выбирают мастерские, общаются с персонажами, берут и выполняют задания, получают теги, токены и репутацию. Родители и сотрудники работают через отдельные кабинеты с серверной проверкой прав.
+«Нортландия онлайн» — образовательная игровая платформа для детской школы. Дети выбирают мастерские, общаются с персонажами, берут и выполняют задания, получают токены, репутацию и достижения. Родители и сотрудники работают через отдельные кабинеты, а права, переходы статусов и начисления проверяются на сервере.
 
-Проект находится на раннем этапе разработки: frontend и backend пока содержат стартовые каркасы, а автономный интерактивный прототип уже доступен в `static-prototype/`. Утверждённые бизнес-правила и границы модулей зафиксированы в `docs/ai/`.
+Проект находится на раннем этапе разработки. Backend и frontend пока представляют собой технические каркасы, автономный прототип интерфейса находится в `static-prototype/`, а утверждённые правила и границы модулей описаны в `docs/ai/`. Порядок дальнейшей реализации и текущее состояние задач приведены в [`ROADMAP.md`](ROADMAP.md).
 
 ## Структура монорепозитория
 
 | Путь | Содержимое |
 | --- | --- |
+| [`backend/`](backend/) | Django-проект, REST API и серверная бизнес-логика |
 | [`frontend/`](frontend/) | Клиентское приложение на Nuxt |
-| [`backend/`](backend/) | Django-проект, будущий REST API и серверная бизнес-логика |
-| [`static-prototype/`](static-prototype/) | Автономный HTML/CSS/JavaScript-прототип без сборки |
+| [`static-prototype/`](static-prototype/) | Автономный HTML/CSS/JavaScript-прототип без сборки и сервера |
 | [`docs/ai/`](docs/ai/) | Предметная область, архитектура, API, схема данных и открытые вопросы |
+| [`ROADMAP.md`](ROADMAP.md) | Этапы разработки, задачи и их текущее состояние |
 | [`AGENTS.md`](AGENTS.md) | Общие инструкции для ИИ-агентов во всём монорепозитории |
 
+Frontend и backend запускаются независимо, но используют общий API-контракт. Django владеет OpenAPI-схемой, а frontend должен генерировать из неё TypeScript-типы и не редактировать generated-файлы вручную.
 
-## Стек
+## Технологии
 
-### Frontend
+Уже подключены:
 
-- Node.js 24 LTS;
-- Nuxt 4 и Vue 3;
-- TypeScript;
-- Tailwind CSS 4 и Nuxt UI;
-- Pinia;
-- ESLint и проверка типов через `vue-tsc`/Nuxt.
+- backend: Python 3.13, Django 6.1.1, Django REST Framework, PostgreSQL, Psycopg 3, `django-environ` и `drf-spectacular`;
+- frontend: Node.js 24 LTS, Nuxt 4, Vue 3, TypeScript, Tailwind CSS 4, Pinia и Nuxt UI;
+- проверки backend: pytest, pytest-django и Ruff;
+- проверки frontend: ESLint, Nuxt typecheck и Vitest.
 
-### Backend
+Будут подключены тогда, когда появится использующая их функциональность:
 
-- Python 3.13;
-- Django 6.1.1;
-- Django REST Framework;
-- PostgreSQL и Psycopg 3;
-- `django-environ` для конфигурации;
-- `drf-spectacular` для будущей OpenAPI-схемы;
-- Celery и Redis для фоновых задач;
-- `django-storages` и S3-совместимое хранилище для закрытых файлов.
-
+- Celery и Redis — для фоновых задач;
+- `django-storages` и S3-совместимое хранилище — для закрытых файлов;
+- Playwright — для сквозных пользовательских сценариев.
 
 ## Требования
 
 - Python 3.13;
 - Node.js 24 LTS и npm;
-- Docker Desktop с Docker Compose для PostgreSQL 16;
+- Docker Desktop с Docker Compose — только для PostgreSQL.
 
-Frontend и backend запускаются независимо. Удобно открыть два терминала из корня репозитория.
+## Первый запуск
 
-## Запуск frontend
+Команды ниже выполняются из корня репозитория, если в тексте не указан другой каталог.
+
+### 1. Подготовить переменные окружения
+
+Django и Docker Compose читают настройки из локального файла `backend/.env`. Создайте его из версионируемого шаблона:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+```
+
+На macOS/Linux:
+
+```shell
+cp backend/.env.example backend/.env
+```
+
+| Переменная          | Назначение                                                                              |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| `SECRET_KEY`        | Секрет Django для криптографической подписи. В production нужен длинный случайный ключ. |
+| `DEBUG`             | Режим отладки. В production должен быть `False`.                                        |
+| `ALLOWED_HOSTS`     | Разрешённые host-заголовки через запятую.                                               |
+| `POSTGRES_DB`       | Имя базы, которую создаёт контейнер и к которой подключается Django.                    |
+| `POSTGRES_USER`     | Пользователь PostgreSQL.                                                                |
+| `POSTGRES_PASSWORD` | Пароль PostgreSQL. Замените пример до первого запуска контейнера.                       |
+| `POSTGRES_HOST`     | Адрес базы для Django. При локальном Docker используется `127.0.0.1`.                   |
+| `POSTGRES_PORT`     | Локальный порт PostgreSQL. По умолчанию `5432`.                                         |
+
+Имя базы, пользователь и пароль применяются при первом создании volume. Их последующее изменение в `.env` не меняет уже существующего пользователя PostgreSQL автоматически. Если нужно пересоздать локальную базу, сначала убедитесь, что в ней нет данных, которые требуется сохранить.
+
+### 2. Подготовить Python-окружение backend
+
+Перейдите в каталог backend:
+
+```shell
+cd backend
+```
+
+Если вы используете venv, создайте и активируйте его в PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+```
+
+На macOS/Linux:
+
+```shell
+python3.13 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-dev.txt
+```
+
+Если вы используете Conda:
+
+```shell
+conda env create -f environment.yml
+conda activate nortland-backend
+```
+
+ Файл `requirements-dev.txt` включает runtime-зависимости из `requirements.txt` и инструменты разработки. Для production устанавливается только `requirements.txt`.
+
+### 3. Запустить PostgreSQL
+
+Отдельно устанавливать PostgreSQL в операционную систему не нужно. База запускается в Docker, а Django продолжает работать локально в выбранном Python-окружении:
+
+```shell
+docker compose --env-file backend/.env up -d --wait postgres
+docker compose --env-file backend/.env ps
+```
+
+Compose создаёт базу и пользователя из `backend/.env`, проверяет готовность PostgreSQL и хранит данные в именованном volume `postgres_data`. Порт публикуется только на локальном интерфейсе.
+
+### 4. Выполнить миграции и запустить backend
+
+Перейдите в `backend/`, активируйте подготовленное окружение и выполните:
+
+```shell
+python manage.py check
+python manage.py migrate
+python manage.py runserver
+```
+
+После запуска доступны:
+
+- Django — `http://127.0.0.1:8000`;
+- OpenAPI — `http://127.0.0.1:8000/api/schema/`;
+- Swagger UI — `http://127.0.0.1:8000/api/docs/`.
+
+Чтобы отдельно подтвердить соединение именно с PostgreSQL, выполните из `backend/`:
+
+```shell
+python manage.py shell -c "from django.db import connection; connection.ensure_connection(); print(connection.vendor, connection.settings_dict['NAME'])"
+```
+
+Команда должна вывести `postgresql` и имя базы из `.env`. Один `manage.py check` наличие соединения с БД не подтверждает.
+
+### 5. Установить и запустить frontend
+
+Откройте второй терминал из корня репозитория:
 
 ```shell
 cd frontend
@@ -54,161 +147,82 @@ npm install
 npm run dev
 ```
 
-После запуска Nuxt выведет локальный адрес, обычно `http://localhost:3000`.
+Nuxt выведет локальный адрес, обычно `http://localhost:3000`. Backend и PostgreSQL при этом продолжают работать в своих процессах.
 
-Дополнительные команды:
+## Ежедневный запуск разработки
+
+После первоначальной настройки обычно нужны три процесса:
+
+1. PostgreSQL из корня репозитория:
+
+   ```shell
+   docker compose --env-file backend/.env up -d --wait postgres
+   ```
+
+2. Django из `backend/` с активированным окружением:
+
+   ```shell
+   python manage.py runserver
+   ```
+
+3. Nuxt из `frontend/`:
+
+   ```shell
+   npm run dev
+   ```
+
+Остановить PostgreSQL без удаления данных можно командой:
 
 ```shell
-npm run lint       # проверка ESLint
-npm run typecheck  # проверка TypeScript
-npm run build      # production-сборка
-npm run preview    # просмотр production-сборки
+docker compose --env-file backend/.env stop postgres
 ```
 
-## Запуск PostgreSQL в Docker
+Повторно запустить остановленный контейнер можно через `start postgres`. Команда `down` удаляет контейнер и сеть, но сохраняет данные в именованном volume.
 
-Устанавливать PostgreSQL в Windows, macOS или Linux отдельно не нужно. Docker Compose скачивает официальный образ PostgreSQL 16, создаёт пользователя и базу из `backend/.env`, проверяет готовность сервера и сохраняет данные в именованном volume `postgres_data`.
 
-При первом запуске скопируйте пример настроек из корня репозитория:
+## Git hooks перед push или commit
+
+Hooks хранятся в `.githooks/` и передаются вместе с репозиторием. В каждом новом клоне включите их один раз из корня проекта:
+
+```shell
+git config --local core.hooksPath .githooks
+```
+
+Настройка действует только в текущем клоне. Перед командами Git активируйте Python-окружение backend. Для запуска hooks из IDE можно сохранить путь к выбранному Python в локальной конфигурации Git:
 
 ```powershell
-Copy-Item backend/.env.example backend/.env
+git config --local nortland.backendPython (python -c "import sys; print(sys.executable)")
 ```
 
 На macOS/Linux:
 
 ```shell
-cp backend/.env.example backend/.env
+git config --local nortland.backendPython "$(python -c 'import sys; print(sys.executable)')"
 ```
 
-Задайте локальный пароль в `POSTGRES_PASSWORD`, затем запустите базу:
+Если путь не задан, hooks используют `python` из активного окружения.
 
-```shell
-docker compose --env-file backend/.env up -d --wait postgres
-docker compose --env-file backend/.env ps
-```
+Перед коммитом запускаются проверки только для изменённой части проекта: для backend — Ruff и pytest, для frontend — ESLint и Vitest. Перед push проверяются обе части. Frontend-hook может автоматически исправить добавленные в индекс файлы ESLint; backend-форматирование только проверяется, поэтому исправление нужно запускать явно через `python -m ruff format .`.
 
-Параметр `--env-file backend/.env` нужен Docker Compose для чтения настроек PostgreSQL. Compose передаёт контейнеру только `POSTGRES_DB`, `POSTGRES_USER` и `POSTGRES_PASSWORD`; Django `SECRET_KEY` в контейнер базы не попадает.
+Если в рабочей папке есть незакоммиченные изменения, hook предупреждает, что проверяет текущие файлы, хотя Git сохраняет или отправляет другую версию. Если PostgreSQL выключен, тесты с `django_db` пропускаются с явным предупреждением — это означает, что логика работы с БД не проверена.
 
-Compose публикует PostgreSQL только на локальном интерфейсе `127.0.0.1:5432`. Остановить базу можно командой `docker compose --env-file backend/.env stop postgres`, снова запустить — `docker compose --env-file backend/.env start postgres`. Команда `docker compose --env-file backend/.env down` удаляет контейнер и сеть, но сохраняет данные в volume.
+## Документация проекта и инструкции для ИИ
 
-Имя базы, пользователь и пароль применяются при первом создании volume. Последующее редактирование этих трёх значений в `.env` не меняет уже созданного пользователя PostgreSQL автоматически.
+Основные документы:
 
-Настройки Django и контейнера берутся из одного файла:
+- [`ROADMAP.md`](ROADMAP.md) — порядок этапов и задач;
+- [`docs/ai/README.md`](docs/ai/README.md) — навигация по документации;
+- [`docs/ai/STACK.md`](docs/ai/STACK.md) — утверждённый стек;
+- [`docs/ai/DOMAIN.md`](docs/ai/DOMAIN.md) — предметная область и бизнес-правила;
+- [`docs/ai/API.md`](docs/ai/API.md) — договорённости REST/OpenAPI;
+- [`docs/ai/MODULES.md`](docs/ai/MODULES.md) — границы модулей M1–M8;
+- [`docs/ai/OPEN_QUESTIONS.md`](docs/ai/OPEN_QUESTIONS.md) — решения, которые нельзя додумывать;
+- [`docs/ai/schema.json`](docs/ai/schema.json) — логическая модель хранения, а не готовые Django models;
+- [`docs/ai/CHECKS.md`](docs/ai/CHECKS.md) — ожидаемые проверки.
 
-```dotenv
-DB_ENGINE=postgresql
-POSTGRES_DB=nortland
-POSTGRES_USER=nortland
-POSTGRES_PASSWORD=choose-a-local-password
-POSTGRES_HOST=127.0.0.1
-POSTGRES_PORT=5432
-```
-
-Django собирает словарь подключения из этих полей в `settings.py`; URL вручную составлять не нужно. `POSTGRES_DB`, `POSTGRES_USER` и `POSTGRES_PASSWORD` также понимает официальный Docker-образ. `POSTGRES_HOST` остаётся `127.0.0.1`, потому что Django запускается на компьютере, а не внутри Compose.
-
-
-## Запуск backend
-
-В PowerShell:
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
-
-В macOS или Linux отличается только активация окружения:
-
-```shell
-cd backend
-python3.13 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
-
-Django будет доступен по адресу `http://127.0.0.1:8000`, admin — по адресу `http://127.0.0.1:8000/admin/`. Чтобы войти в admin, сначала выполните `python manage.py createsuperuser`.
-
-### Установка backend через Miniconda
-
-Установите [Miniconda](https://docs.conda.io/projects/miniconda/en/latest/) и откройте Anaconda Prompt или терминал, в котором доступна команда `conda`. Файл `backend/environment.yml` создаёт отдельное окружение с Python 3.13 и устанавливает зависимости из `requirements.txt`:
-
-```shell
-cd backend
-conda env create -f environment.yml
-conda activate nortland-backend
-```
-
-После запуска PostgreSQL через Docker примените миграции и запустите Django:
-
-```shell
-python manage.py migrate
-python manage.py runserver
-```
-
-После изменения зависимостей окружение можно синхронизировать:
-
-```shell
-conda env update -f environment.yml --prune
-```
-
-## Переменные окружения backend
-
-Django читает [`backend/.env`](backend/.env) при старте. Этот файл содержит локальные значения и исключён из Git. Версионируемый шаблон находится в [`backend/.env.example`](backend/.env.example). Для нового окружения скопируйте шаблон и заполните значения:
-
-```powershell
-Copy-Item backend/.env.example backend/.env
-```
-
-На macOS/Linux:
-
-```shell
-cp backend/.env.example backend/.env
-```
-
-| Переменная | Назначение |
-| --- | --- |
-| `SECRET_KEY` | Секрет Django для криптографической подписи. В production нужен длинный случайный ключ. |
-| `DEBUG` | Режим отладки. В production должен быть `False`. |
-| `ALLOWED_HOSTS` | Разрешённые host-заголовки через запятую. |
-| `DB_ENGINE` | Движок базы. Текущая Docker-конфигурация использует `postgresql`. |
-| `POSTGRES_DB` | Имя базы, которую создаёт контейнер и к которой подключается Django. |
-| `POSTGRES_USER` | Пользователь PostgreSQL. |
-| `POSTGRES_PASSWORD` | Пароль PostgreSQL. Замените пример перед первым запуском контейнера. |
-| `POSTGRES_HOST` | Адрес базы для Django; при локальном Docker — `127.0.0.1`. |
-| `POSTGRES_PORT` | Порт PostgreSQL — `5432`. |
-
-В `.env.example` оставлены только параметры, которые читает текущий Django-каркас, и настройки PostgreSQL. Переменные Redis, Celery, SMTP и S3 будут добавлены, когда соответствующие интеграции появятся в коде. Не коммитьте настоящий `.env`, пароли и ключи доступа.
-
-## Запуск автономного прототипа
-
-Откройте [`static-prototype/index.html`](static-prototype/index.html) двойным щелчком и выберите экран. Для этой части не нужны Node.js, Python, npm или локальный сервер. Подробности приведены в [`static-prototype/README.md`](static-prototype/README.md).
-
-Прототип содержит демонстрационные данные и не обращается к backend.
-
-## Документация для ИИ-агентов
-
-Агент, работающий из корня, начинает с [`AGENTS.md`](AGENTS.md), затем читает навигацию [`docs/ai/README.md`](docs/ai/README.md), стек [`docs/ai/STACK.md`](docs/ai/STACK.md) и предметную область [`docs/ai/DOMAIN.md`](docs/ai/DOMAIN.md).
-
-Для работы только с одной частью есть самостоятельные инструкции:
+ИИ-агент, работающий из корня, начинает с [`AGENTS.md`](AGENTS.md), а затем читает только документы, связанные с текущей задачей. Для независимой работы в двух IDE используются:
 
 - backend: [`backend/AGENTS.md`](backend/AGENTS.md) и [`backend/docs/ai/CONTEXT.md`](backend/docs/ai/CONTEXT.md);
 - frontend: [`frontend/AGENTS.md`](frontend/AGENTS.md) и [`frontend/docs/ai/CONTEXT.md`](frontend/docs/ai/CONTEXT.md).
 
-Общие документы:
-
-- [`docs/ai/API.md`](docs/ai/API.md) — договорённости REST/OpenAPI;
-- [`docs/ai/MODULES.md`](docs/ai/MODULES.md) — границы доменных модулей M1–M8;
-- [`docs/ai/OPEN_QUESTIONS.md`](docs/ai/OPEN_QUESTIONS.md) — решения, которые нельзя додумывать;
-- [`docs/ai/schema.json`](docs/ai/schema.json) — логическая модель хранения, не готовые Django models;
-- [`docs/ai/CHECKS.md`](docs/ai/CHECKS.md) — ожидаемые проверки.
-
-Django владеет API-контрактом и публикует OpenAPI. Frontend должен генерировать типы из схемы и не редактировать generated-файлы вручную.
-
-При изменении бизнес-правил обновляйте `DOMAIN.md`; при изменении API — OpenAPI, клиент и тесты; при изменении хранения — Django migrations и `schema.json`.
+При изменении бизнес-правил нужно обновлять `DOMAIN.md`; при изменении API — OpenAPI, frontend-клиент и тесты; при изменении хранения — Django migrations и `schema.json`.
