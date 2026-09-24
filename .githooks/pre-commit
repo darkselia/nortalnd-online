@@ -28,19 +28,26 @@ if [ "${NORTLAND_FORCE_ALL:-0}" != 1 ]; then
 fi
 
 if [ "$frontend" = true ] && [ "${NORTLAND_FORCE_ALL:-0}" != 1 ]; then
-  if git diff --quiet -- frontend; then
-    staged_frontend_files() {
-      git diff --cached --name-only -z --diff-filter=ACMR -- \
-        ':(glob)frontend/**/*.js' \
-        ':(glob)frontend/**/*.mjs' \
-        ':(glob)frontend/**/*.cjs' \
-        ':(glob)frontend/**/*.ts' \
-        ':(glob)frontend/**/*.vue'
-    }
-    staged_frontend_files | xargs -0 -r npx --prefix frontend eslint --config frontend/eslint.config.mjs --fix
-    staged_frontend_files | xargs -0 -r git add --
-  else
-    echo '[hooks] Автоисправление ESLint пропущено: есть изменения frontend вне индекса.' >&2
+  staged_frontend_files() {
+    git diff --cached --name-only -z --diff-filter=ACMR -- \
+      ':(glob)frontend/**/*.js' \
+      ':(glob)frontend/**/*.mjs' \
+      ':(glob)frontend/**/*.cjs' \
+      ':(glob)frontend/**/*.ts' \
+      ':(glob)frontend/**/*.vue'
+  }
+  staged_frontend_files | xargs -0 -r -n 1 sh -c '
+    if ! git diff --quiet -- "$1"; then
+      echo "[hooks] Не удалось применить ESLint --fix: в $1 есть изменения вне индекса. Добавьте или уберите их перед коммитом." >&2
+      exit 1
+    fi
+  ' sh
+  lint_status=0
+  staged_frontend_files | xargs -0 -r npx --prefix frontend eslint --config frontend/eslint.config.mjs --fix || lint_status=$?
+  staged_frontend_files | xargs -0 -r git add --
+  if [ "$lint_status" -ne 0 ]; then
+    echo '[hooks] ESLint исправил доступные ошибки, но оставшиеся ошибки остановили коммит. Проверьте вывод и индекс.' >&2
+    exit "$lint_status"
   fi
 fi
 
