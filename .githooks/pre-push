@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+set -eu
+if [ -x /usr/bin/cygpath ]; then
+  PATH="/usr/bin:$PATH"
+  export PATH
+fi
+
+hook_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+if [ -n "$(git status --porcelain -- backend frontend)" ]; then
+  echo '[hooks] Есть незакоммиченные изменения. Проверки идут по текущим файлам, а push отправит сохранённые коммиты.' >&2
+fi
+
+NORTLAND_FORCE_ALL=1 "$hook_dir/pre-commit"

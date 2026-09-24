@@ -1,0 +1,78 @@
+#!/usr/bin/env sh
+set -eu
+if [ -x /usr/bin/cygpath ]; then
+  PATH="/usr/bin:$PATH"
+  export PATH
+fi
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+backend=false
+frontend=false
+if [ "${NORTLAND_FORCE_ALL:-0}" = 1 ]; then
+  backend=true
+  frontend=true
+else
+  if ! git diff --cached --quiet -- backend; then backend=true; fi
+  if ! git diff --cached --quiet -- frontend; then frontend=true; fi
+fi
+
+if [ "$backend" = false ] && [ "$frontend" = false ]; then exit 0; fi
+
+if [ "${NORTLAND_FORCE_ALL:-0}" != 1 ]; then
+  if ! git diff --quiet -- backend frontend ||
+    [ -n "$(git ls-files --others --exclude-standard -- backend frontend)" ]; then
+    echo '[hooks] В рабочей папке есть незакоммиченные изменения. Проверки идут по текущим файлам, а не только по индексу.' >&2
+  fi
+fi
+
+if [ "$frontend" = true ] && [ "${NORTLAND_FORCE_ALL:-0}" != 1 ]; then
+  if git diff --quiet -- frontend; then
+    staged_frontend_files() {
+      git diff --cached --name-only -z --diff-filter=ACMR -- \
+        ':(glob)frontend/**/*.js' \
+        ':(glob)frontend/**/*.mjs' \
+        ':(glob)frontend/**/*.cjs' \
+        ':(glob)frontend/**/*.ts' \
+        ':(glob)frontend/**/*.vue'
+    }
+    staged_frontend_files | xargs -0 -r npx --prefix frontend eslint --config frontend/eslint.config.mjs --fix
+    staged_frontend_files | xargs -0 -r git add --
+  else
+    echo '[hooks] Автоисправление ESLint пропущено: есть изменения frontend вне индекса.' >&2
+  fi
+fi
+
+if [ "$backend" = true ]; then
+  backend_python=$(git config --local --get nortland.backendPython || echo python)
+  cd "$repo_root/backend"
+  "$backend_python" -m ruff check .
+  "$backend_python" -m ruff format --check .
+  if "$backend_python" -m scripts.probe_postgres; then
+    "$backend_python" -m pytest
+  else
+    probe_status=$?
+    if [ "$probe_status" -ne 3 ]; then exit "$probe_status"; fi
+    echo '[hooks] PostgreSQL недоступен: тесты с django_db ПРОПУЩЕНЫ.' >&2
+    if "$backend_python" -m pytest -m 'not django_db'; then
+      :
+    else
+      test_status=$?
+      if [ "$test_status" -eq 5 ]; then
+        echo '[hooks] Тестов без БД пока нет; логика БД не проверена.' >&2
+      else
+        exit "$test_status"
+      fi
+    fi
+  fi
+  cd "$repo_root"
+fi
+
+if [ "$frontend" = true ]; then
+  npm --prefix frontend run lint
+  if ! git ls-files --cached --others --exclude-standard -- frontend | grep -Eq '\.(test|spec)\.[cm]?[jt]sx?$'; then
+    echo '[hooks] Unit-тестов frontend пока нет.' >&2
+  fi
+  npm --prefix frontend test
+fi
