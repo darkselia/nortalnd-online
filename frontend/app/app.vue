@@ -1,77 +1,42 @@
-<script setup>
-useHead({
-  meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
-  link: [{ rel: 'icon', href: '/favicon.ico' }],
-  htmlAttrs: {
-    lang: 'en',
-  },
+<script setup lang="ts">
+import { ru } from '@nuxt/ui/locale';
+import brandLogo from '~/assets/images/logo-simple.png';
+
+const title = 'Нортландия онлайн';
+const description = 'Онлайн-школа, где дети открывают мастерские, знакомятся с персонажами и выполняют задания.';
+const colorMode = useColorMode();
+const themeColor = ref<string>();
+
+onMounted(() => {
+  watch(() => colorMode.value, () => {
+    themeColor.value = getComputedStyle(document.documentElement)
+      .getPropertyValue('--nl-page-bg')
+      .trim();
+  }, { immediate: true, flush: 'post' });
 });
 
-const title = 'Nuxt Starter Template';
-const description = 'A production-ready starter template powered by Nuxt UI. ' +
-  'Build beautiful, accessible, and performant applications in minutes, not hours.';
+useHead(() => ({
+  htmlAttrs: { lang: 'ru' },
+  meta: themeColor.value ? [{ name: 'theme-color', content: themeColor.value }] : [],
+  link: [{ rel: 'icon', type: 'image/png', href: brandLogo }],
+}));
 
 useSeoMeta({
   title,
   description,
   ogTitle: title,
   ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
-  twitterCard: 'summary_large_image',
 });
 </script>
 
 <template>
-  <UApp>
-    <UHeader>
-      <template #left>
-        <NuxtLink
-          to="/"
-          class="focus-visible:outline-3 outline-primary/25 rounded-md p-1 -ms-1"
-        >
-          <AppLogo class="w-auto h-6 shrink-0" />
-        </NuxtLink>
-
-        <TemplateMenu />
-      </template>
-
-      <template #right>
-        <UColorModeButton />
-
-        <UButton
-          to="https://github.com/nuxt-ui-templates/starter"
-          target="_blank"
-          icon="i-simple-icons-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
-      </template>
-    </UHeader>
-
-    <UMain>
-      <NuxtPage />
-    </UMain>
-
-    <USeparator icon="i-simple-icons-nuxtdotjs" />
-
-    <UFooter>
-      <template #left>
-        <p class="text-sm text-muted">
-          Built with Nuxt UI • © {{ new Date().getFullYear() }}
-        </p>
-      </template>
-
-      <template #right>
-        <UButton
-          to="https://github.com/nuxt-ui-templates/starter"
-          target="_blank"
-          icon="i-simple-icons-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
-      </template>
-    </UFooter>
+  <UApp :locale="ru">
+    <div class="flex min-h-dvh flex-col bg-page">
+      <AppHeader />
+      <main class="flex w-full flex-1">
+        <NuxtPage />
+      </main>
+      <AppFooter />
+    </div>
   </UApp>
 </template>

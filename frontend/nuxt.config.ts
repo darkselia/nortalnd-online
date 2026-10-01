@@ -10,7 +10,18 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
+  app: {
+    head: {
+      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }],
+    },
+  },
+
   css: ['~/assets/css/main.css'],
+
+  colorMode: {
+    preference: 'light',
+    fallback: 'light',
+  },
 
   routeRules: {
     '/': { prerender: true },

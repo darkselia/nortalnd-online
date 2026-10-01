@@ -1,0 +1,90 @@
+@theme static {
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-nortland-50: #f3f8fd;
+  --color-nortland-100: #e1ecf6;
+  --color-nortland-200: #bdcedd;
+  --color-nortland-300: #93a4b4;
+  --color-nortland-400: #5e6b78;
+  --color-nortland-500: #2a2a2a;
+  --color-nortland-600: #242424;
+  --color-nortland-700: #1e1e1e;
+  --color-nortland-800: #181818;
+  --color-nortland-900: #121212;
+  --color-nortland-950: #090909;
+
+  --color-nortland-sky: #c5dcf0;
+  --color-nortland-sky-deep: #aecceb;
+  --color-nortland-surface: #ffffff;
+  --color-nortland-mastery: #72b8c8;
+  --color-nortland-action: #88c878;
+  --color-nortland-reputation: #c89ab8;
+  --color-nortland-shadow: #3c6086;
+
+  --radius-card: 14px;
+  --radius-picture: 20px;
+}
+
+@theme inline {
+  --color-page: var(--nl-page-bg);
+  --color-focus: var(--nl-focus);
+  --color-mastery: var(--nl-mastery);
+  --color-action: var(--nl-action);
+  --color-reputation: var(--nl-reputation);
+  --shadow-card: var(--nl-shadow);
+}
+
+/* These roles are shared by Nuxt UI and custom components. */
+:root {
+  color-scheme: light;
+  --ui-primary: var(--color-nortland-500);
+  --ui-text: var(--color-nortland-500);
+  --ui-text-highlighted: var(--color-nortland-600);
+  --ui-text-toned: var(--color-nortland-400);
+  --ui-text-muted: var(--color-nortland-400);
+  --ui-text-dimmed: var(--color-nortland-300);
+  --ui-text-inverted: var(--color-nortland-surface);
+  --ui-bg: var(--color-nortland-surface);
+  --ui-bg-muted: var(--color-nortland-50);
+  --ui-bg-elevated: var(--color-nortland-surface);
+  --ui-bg-accented: var(--color-nortland-100);
+  --ui-bg-inverted: var(--color-nortland-500);
+  --ui-border: var(--color-nortland-100);
+  --ui-border-muted: var(--color-nortland-50);
+  --ui-border-accented: var(--color-nortland-200);
+  --ui-border-inverted: var(--color-nortland-600);
+
+  --nl-page-bg: var(--color-nortland-sky);
+  --nl-page-bg-deep: var(--color-nortland-sky-deep);
+  --nl-mastery: var(--color-nortland-mastery);
+  --nl-action: var(--color-nortland-action);
+  --nl-reputation: var(--color-nortland-reputation);
+  --nl-focus: var(--nl-mastery);
+  --nl-shadow-color: var(--color-nortland-shadow);
+  --nl-shadow: 0 6px 18px color-mix(in srgb, var(--nl-shadow-color) 14%, transparent);
+}
+
+.dark {
+  color-scheme: dark;
+  --ui-primary: var(--color-nortland-100);
+  --ui-text: var(--color-slate-200);
+  --ui-text-highlighted: var(--color-slate-50);
+  --ui-text-toned: var(--color-slate-300);
+  --ui-text-muted: var(--color-slate-400);
+  --ui-text-dimmed: var(--color-slate-500);
+  --ui-text-inverted: var(--color-slate-950);
+  --ui-bg: var(--color-slate-900);
+  --ui-bg-muted: var(--color-slate-800);
+  --ui-bg-elevated: var(--color-slate-800);
+  --ui-bg-accented: var(--color-slate-700);
+  --ui-bg-inverted: var(--color-slate-100);
+  --ui-border: var(--color-slate-700);
+  --ui-border-muted: var(--color-slate-800);
+  --ui-border-accented: var(--color-slate-600);
+  --ui-border-inverted: var(--color-slate-200);
+
+  --nl-page-bg: var(--color-slate-950);
+  --nl-page-bg-deep: var(--color-slate-900);
+  --nl-shadow-color: var(--color-nortland-950);
+  --nl-shadow: 0 6px 18px color-mix(in srgb, var(--nl-shadow-color) 45%, transparent);
+}
