@@ -10,15 +10,20 @@
 | Экран, форма, диалог, кабинет | [FRONTEND.md](FRONTEND.md), [API.md](API.md), локальный `frontend/docs/ai/CONTEXT.md` |
 | Модель, миграция, операция, права | [BACKEND.md](BACKEND.md), [schema.json](schema.json), локальный `backend/docs/ai/CONTEXT.md` |
 | Совместная разработка | [API.md](API.md), [CHECKS.md](CHECKS.md) |
+| Компонентные тесты frontend | [TESTING.md](../../frontend/docs/TESTING.md), локальный `frontend/docs/ai/CONTEXT.md` |
 | Неясное правило | [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md); не додумывать поведение |
 
 ## Текущее состояние
 
 Монорепозиторий имеет два отдельных IDE-корня: `backend/` и `frontend/`. Каждый содержит собственный `AGENTS.md` и самодостаточный `docs/ai/CONTEXT.md`.
 
-Backend — стандартный каркас Django 6.1.1 с admin endpoint, `requirements.txt` и конфигурацией через `.env`. PostgreSQL 16 для локальной разработки запускается из корневого `compose.yaml`; Django остаётся локальным процессом. Прикладные apps, REST endpoints, OpenAPI, фоновые задачи и автоматические тесты пока не созданы.
+Backend — Django-проект с приложением `accounts` и собственной моделью взрослого пользователя, admin endpoint, зависимостями в `requirements.txt` и конфигурацией через `.env`. В requirements закреплён Django 6.1.1. Для локальной разработки PostgreSQL 16 предусмотрен корневым `compose.yaml`, а Django запускается локальным процессом. DRF и `drf-spectacular` подключены, схема настроена по `/api/schema/`, документация — по `/api/docs/`. Общий префикс будущих прикладных endpoints — `/api/v1/`; самих endpoints, фоновых задач и S3 storage пока нет. Существующий набор pytest покрывает PostgreSQL, Account и базовый API-контракт.
 
-Frontend — Nuxt 4.5.2, Nuxt UI 4.11, Pinia и Tailwind CSS 4. Существуют scripts `dev`, `build`, `preview`, `lint`, `typecheck`; страницы пока являются starter-шаблоном. Vitest, Playwright, API-клиент и generated-типы пока не подключены. Среда при сверке: Python 3.13.9, Node 24.21.0, npm 11.19.0.
+Frontend — Nuxt 4.5.2, Nuxt UI 4.11, Pinia и Tailwind CSS 4. Есть русскоязычная главная страница, отдельные шапка/футер и токены светлой/тёмной темы. Инструкции запросов — в [API.md](../../frontend/docs/API.md), команды и устройство тестов — в [TESTING.md](../../frontend/docs/TESTING.md). Playwright, реальные endpoints входа и generated-типы пока не подключены.
+
+Экран ошибок Nuxt `frontend/app/error.vue` показывает 404 для неизвестного адреса, нейтральный текст для остальных ошибок и кнопку возврата на главную. Он сохраняет общие шапку, футер и тему. Индикаторы загрузки пока отложены.
+
+Личные сведения об установленных инструментах и выбранных interpreter хранить в `backend/docs/local/ENVIRONMENT.md` и `frontend/docs/local/ENVIRONMENT.md`. Эти необязательные файлы исключены из Git; общая документация содержит требования проекта и воспроизводимые инструкции.
 
 Архитектура — модульный монолит: один Django API, один Nuxt-клиент, одна PostgreSQL, модули M1–M8. Модули не являются микросервисами.
 

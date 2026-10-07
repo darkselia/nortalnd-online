@@ -2,7 +2,7 @@
 
 «Нортландия онлайн» — образовательная игровая платформа для детской школы. Дети выбирают мастерские, общаются с персонажами, берут и выполняют задания, получают токены, репутацию и достижения. Родители и сотрудники работают через отдельные кабинеты, а права, переходы статусов и начисления проверяются на сервере.
 
-Проект находится на раннем этапе разработки. Backend и frontend пока представляют собой технические каркасы, автономный прототип интерфейса находится в `static-prototype/`, а утверждённые правила и границы модулей описаны в `docs/ai/`. Порядок дальнейшей реализации и текущее состояние задач приведены в [`ROADMAP.md`](ROADMAP.md).
+Проект находится на раннем этапе разработки. Backend содержит взрослый Account, Django admin и общую основу REST API; frontend — главную страницу с шапкой, футером и светлой/тёмной темой. Прикладных API endpoints и интеграции между приложениями пока нет. Автономный прототип интерфейса находится в `static-prototype/`, утверждённые правила и границы модулей — в `docs/ai/`. Порядок дальнейшей реализации и текущее состояние задач приведены в [`ROADMAP.md`](ROADMAP.md).
 
 ## Структура монорепозитория
 
@@ -15,7 +15,7 @@
 | [`ROADMAP.md`](ROADMAP.md) | Этапы разработки, задачи и их текущее состояние |
 | [`AGENTS.md`](AGENTS.md) | Общие инструкции для ИИ-агентов во всём монорепозитории |
 
-Frontend и backend запускаются независимо, но используют общий API-контракт. Django владеет OpenAPI-схемой, а frontend должен генерировать из неё TypeScript-типы и не редактировать generated-файлы вручную.
+Frontend и backend запускаются независимо. Общие правила будущей интеграции задаёт API-контракт Django: он владеет OpenAPI-схемой, из которой frontend будет генерировать TypeScript-типы по мере появления прикладных endpoints.
 
 ## Технологии
 
@@ -24,7 +24,7 @@ Frontend и backend запускаются независимо, но испол
 - backend: Python 3.13, Django 6.1.1, Django REST Framework, PostgreSQL, Psycopg 3, `django-environ` и `drf-spectacular`;
 - frontend: Node.js 24 LTS, Nuxt 4, Vue 3, TypeScript, Tailwind CSS 4, Pinia и Nuxt UI;
 - проверки backend: pytest, pytest-django и Ruff;
-- проверки frontend: ESLint, Nuxt typecheck и Vitest.
+- проверки frontend: ESLint, Nuxt typecheck и Vitest с Nuxt Test Utils, Vue Test Utils и Happy DOM; постоянные тесты добавляются вместе с функциями.
 
 Будут подключены тогда, когда появится использующая их функциональность:
 
@@ -36,15 +36,13 @@ Frontend и backend запускаются независимо, но испол
 
 - Python 3.13;
 - Node.js 24 LTS и npm;
-- Docker Desktop с Docker Compose — только для PostgreSQL.
+- Docker Desktop с Docker Compose — для PostgreSQL.
 
 ## Первый запуск
 
 Команды ниже выполняются из корня репозитория, если в тексте не указан другой каталог.
 
 ### 1. Подготовить переменные окружения
-
-Django и Docker Compose читают настройки из локального файла `backend/.env`. Создайте его из версионируемого шаблона:
 
 ```powershell
 Copy-Item backend/.env.example backend/.env
@@ -56,18 +54,16 @@ Copy-Item backend/.env.example backend/.env
 cp backend/.env.example backend/.env
 ```
 
-| Переменная          | Назначение                                                                              |
-| ------------------- | --------------------------------------------------------------------------------------- |
-| `SECRET_KEY`        | Секрет Django для криптографической подписи. В production нужен длинный случайный ключ. |
-| `DEBUG`             | Режим отладки. В production должен быть `False`.                                        |
-| `ALLOWED_HOSTS`     | Разрешённые host-заголовки через запятую.                                               |
-| `POSTGRES_DB`       | Имя базы, которую создаёт контейнер и к которой подключается Django.                    |
-| `POSTGRES_USER`     | Пользователь PostgreSQL.                                                                |
-| `POSTGRES_PASSWORD` | Пароль PostgreSQL. Замените пример до первого запуска контейнера.                       |
-| `POSTGRES_HOST`     | Адрес базы для Django. При локальном Docker используется `127.0.0.1`.                   |
-| `POSTGRES_PORT`     | Локальный порт PostgreSQL. По умолчанию `5432`.                                         |
-
-Имя базы, пользователь и пароль применяются при первом создании volume. Их последующее изменение в `.env` не меняет уже существующего пользователя PostgreSQL автоматически. Если нужно пересоздать локальную базу, сначала убедитесь, что в ней нет данных, которые требуется сохранить.
+| Переменная | Назначение |
+| --- | --- |
+| `SECRET_KEY` | Секрет Django для криптографической подписи. В production нужен длинный случайный ключ. |
+| `DEBUG` | Режим отладки. В production должен быть `False`. |
+| `ALLOWED_HOSTS` | Разрешённые host-заголовки через запятую. |
+| `POSTGRES_DB` | Имя базы, которую создаёт контейнер и к которой подключается Django. |
+| `POSTGRES_USER` | Пользователь PostgreSQL. |
+| `POSTGRES_PASSWORD` | Пароль PostgreSQL. |
+| `POSTGRES_HOST` | Адрес базы для Django. |
+| `POSTGRES_PORT` | Локальный порт PostgreSQL. |
 
 ### 2. Подготовить Python-окружение backend
 
@@ -93,25 +89,14 @@ source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 ```
 
-Если вы используете Conda:
-
-```shell
-conda env create -f environment.yml
-conda activate nortland-backend
-```
-
- Файл `requirements-dev.txt` включает runtime-зависимости из `requirements.txt` и инструменты разработки. Для production устанавливается только `requirements.txt`.
+Файл `requirements-dev.txt` включает runtime-зависимости из `requirements.txt` и инструменты разработки; Conda устанавливает этот же набор через `environment.yml`.
 
 ### 3. Запустить PostgreSQL
-
-Отдельно устанавливать PostgreSQL в операционную систему не нужно. База запускается в Docker, а Django продолжает работать локально в выбранном Python-окружении:
 
 ```shell
 docker compose --env-file backend/.env up -d --wait postgres
 docker compose --env-file backend/.env ps
 ```
-
-Compose создаёт базу и пользователя из `backend/.env`, проверяет готовность PostgreSQL и хранит данные в именованном volume `postgres_data`. Порт публикуется только на локальном интерфейсе.
 
 ### 4. Выполнить миграции и запустить backend
 
@@ -129,17 +114,12 @@ python manage.py runserver
 - OpenAPI — `http://127.0.0.1:8000/api/schema/`;
 - Swagger UI — `http://127.0.0.1:8000/api/docs/`.
 
-Чтобы отдельно подтвердить соединение именно с PostgreSQL, выполните из `backend/`:
-
-```shell
-python manage.py shell -c "from django.db import connection; connection.ensure_connection(); print(connection.vendor, connection.settings_dict['NAME'])"
-```
-
-Команда должна вывести `postgresql` и имя базы из `.env`. Один `manage.py check` наличие соединения с БД не подтверждает.
 
 ### 5. Установить и запустить frontend
 
 Откройте второй терминал из корня репозитория:
+
+Создайте `frontend/.env` по `frontend/.env.example`; адрес Django задаётся через `NUXT_BACKEND_ORIGIN`. Настройка прокси и примеры запросов — в [инструкции API](frontend/docs/API.md).
 
 ```shell
 cd frontend
@@ -148,37 +128,26 @@ npm run dev
 ```
 
 Nuxt выведет локальный адрес, обычно `http://localhost:3000`. Backend и PostgreSQL при этом продолжают работать в своих процессах.
+## Проверки
 
-## Ежедневный запуск разработки
-
-После первоначальной настройки обычно нужны три процесса:
-
-1. PostgreSQL из корня репозитория:
-
-   ```shell
-   docker compose --env-file backend/.env up -d --wait postgres
-   ```
-
-2. Django из `backend/` с активированным окружением:
-
-   ```shell
-   python manage.py runserver
-   ```
-
-3. Nuxt из `frontend/`:
-
-   ```shell
-   npm run dev
-   ```
-
-Остановить PostgreSQL без удаления данных можно командой:
+Из `backend/`, с активированным Python-окружением и доступной PostgreSQL для тестов:
 
 ```shell
-docker compose --env-file backend/.env stop postgres
+python -m ruff check .
+python -m ruff format --check .
+python -m pytest
 ```
 
-Повторно запустить остановленный контейнер можно через `start postgres`. Команда `down` удаляет контейнер и сеть, но сохраняет данные в именованном volume.
+Из `frontend/`:
 
+```shell
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+Расположение тестов, `test:watch`, пример и очистка состояния описаны в [инструкции тестирования frontend](frontend/docs/TESTING.md). Проверка автономного прототипа описана в его [README](static-prototype/README.md).
 
 ## Git hooks перед push или commit
 
@@ -199,8 +168,6 @@ git config --local nortland.backendPython (python -c "import sys; print(sys.exec
 ```shell
 git config --local nortland.backendPython "$(python -c 'import sys; print(sys.executable)')"
 ```
-
-Если путь не задан, hooks используют `python` из активного окружения.
 
 Перед коммитом запускаются проверки только для изменённой части проекта: для backend — Ruff и pytest, для frontend — ESLint и Vitest. Frontend-hook применяет `ESLint --fix` к добавленным в индекс JS, TS и Vue-файлам и снова добавляет исправления в индекс. Если в одном из этих файлов есть изменения вне индекса, hook останавливает коммит: сначала добавьте их в индекс или уберите. Перед push обе части проверяются без автоисправлений, потому что push отправляет уже созданные коммиты. Backend-форматирование только проверяется, поэтому исправление нужно запускать явно через `python -m ruff format .`.
 
