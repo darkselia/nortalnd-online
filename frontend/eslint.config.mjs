@@ -134,4 +134,10 @@ export default withNuxt({
     ],
     'vue/html-self-closing': 'off',
   },
+}, {
+  name: 'nortland/pages',
+  files: ['**/app/pages/**/*.vue'],
+  rules: {
+    'vue/multi-word-component-names': 'off',
+  },
 });

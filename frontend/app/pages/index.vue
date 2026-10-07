@@ -1,76 +1,77 @@
+<script setup lang="ts">
+import schoolIllustration from '~/assets/images/title.jpg';
+</script>
+
 <template>
-  <div>
-    <UPageHero
-      title="Nuxt Starter Template"
-      description="A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours."
-      :links="[{
-        label: 'Get started',
-        to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-        target: '_blank',
-        trailingIcon: 'i-lucide-arrow-right',
-        size: 'xl'
-      }, {
-        label: 'Use this template',
-        to: 'https://github.com/nuxt-ui-templates/starter',
-        target: '_blank',
-        icon: 'i-simple-icons-github',
-        size: 'xl',
-        color: 'neutral',
-        variant: 'subtle'
-      }]"
-    />
+  <section class="landing" aria-labelledby="landing-title">
+    <div class="grid justify-items-start gap-5">
+      <p class="text-xs font-extrabold tracking-[0.08em] text-muted uppercase">
+        Онлайн-школа для детей
+      </p>
+      <h1 id="landing-title" class="landing-title">
+        Добро пожаловать в Нортландию
+      </h1>
+      <p class="landing-description text-muted">
+        Здесь дети открывают мастерские, знакомятся с персонажами и выполняют задания.
+        Нортландия онлайн готовится к первым путешествиям.
+      </p>
+      <div class="grid justify-items-start gap-2">
+        <UButton size="xl" disabled aria-describedby="landing-login-status">
+          Войти
+        </UButton>
+        <p id="landing-login-status" class="text-sm text-muted">
+          Вход станет доступен позже.
+        </p>
+      </div>
+    </div>
 
-    <UPageSection
-      id="features"
-      title="Everything you need to build modern Nuxt apps"
-      description="Start with a solid foundation. This template includes all the essentials for building production-ready applications with Nuxt UI's powerful component system."
-      :features="[{
-        icon: 'i-lucide-rocket',
-        title: 'Production-ready from day one',
-        description: 'Pre-configured with TypeScript, ESLint, Tailwind CSS, and all the best practices. Focus on building features, not setting up tooling.'
-      }, {
-        icon: 'i-lucide-palette',
-        title: 'Beautiful by default',
-        description: 'Leveraging Nuxt UI\'s design system with automatic dark mode, consistent spacing, and polished components that look great out of the box.'
-      }, {
-        icon: 'i-lucide-zap',
-        title: 'Lightning fast',
-        description: 'Optimized for performance with SSR/SSG support, automatic code splitting, and edge-ready deployment. Your users will love the speed.'
-      }, {
-        icon: 'i-lucide-blocks',
-        title: '100+ components included',
-        description: 'Access Nuxt UI\'s comprehensive component library. From forms to navigation, everything is accessible, responsive, and customizable.'
-      }, {
-        icon: 'i-lucide-code-2',
-        title: 'Developer experience first',
-        description: 'Auto-imports, hot module replacement, and TypeScript support. Write less boilerplate and ship more features.'
-      }, {
-        icon: 'i-lucide-shield-check',
-        title: 'Built for scale',
-        description: 'Enterprise-ready architecture with proper error handling, SEO optimization, and security best practices built-in.'
-      }]"
-    />
-
-    <UPageSection>
-      <UPageCTA
-        title="Ready to build your next Nuxt app?"
-        description="Join thousands of developers building with Nuxt and Nuxt UI. Get this template and start shipping today."
-        variant="subtle"
-        :links="[{
-          label: 'Start building',
-          to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-          target: '_blank',
-          trailingIcon: 'i-lucide-arrow-right',
-          color: 'neutral'
-        }, {
-          label: 'View on GitHub',
-          to: 'https://github.com/nuxt-ui-templates/starter',
-          target: '_blank',
-          icon: 'i-simple-icons-github',
-          color: 'neutral',
-          variant: 'outline'
-        }]"
-      />
-    </UPageSection>
-  </div>
+    <img
+      :src="schoolIllustration"
+      class="landing-picture rounded-picture shadow-card"
+      alt="Иллюстрированная площадь онлайн-школы Нортландия"
+      width="1024"
+      height="768"
+    >
+  </section>
 </template>
+
+<style scoped>
+.landing {
+  display: grid;
+  width: min(100%, 1200px);
+  align-items: center;
+  gap: 24px;
+  margin: auto;
+  padding: 32px 16px;
+}
+
+.landing-title {
+  max-width: 14ch;
+  font-size: clamp(2rem, 7vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.landing-description {
+  max-width: 55ch;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.55;
+}
+
+.landing-picture {
+  width: 100%;
+  max-width: 590px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center 65%;
+  border: 8px solid var(--ui-bg);
+}
+
+@media (min-width: 768px) {
+  .landing {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+    padding: 56px 24px;
+  }
+}
+</style>

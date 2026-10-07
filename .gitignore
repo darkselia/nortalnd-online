@@ -5,12 +5,17 @@
 .DS_Store
 Thumbs.db
 
+# Local product materials (not part of the repository)
+/Прототип сайта/
+/Структура данных/
+.obsidian
 
 # Secrets and local configuration
 .env
 .env.*
 !.env.example
 *.local
+**/docs/local/
 
 # Python / Django
 __pycache__/

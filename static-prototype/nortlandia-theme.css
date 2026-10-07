@@ -1,0 +1,242 @@
+/* =========================================================================
+   НОРТЛАНДИЯ — CSS-тема
+   Детская летняя школа «Нортландия» · зима · лёд · северный стиль
+   Подключается к существующему движку. Все цвета/размеры — через переменные.
+   ========================================================================= */
+
+/* ---- 1. Шрифт (Google Fonts, округлый дружелюбный) ----------------------- */
+
+/* ---- 2. Токены дизайн-системы ------------------------------------------- */
+:root {
+  /* Цвета — фон и поверхности */
+  --color-bg:            #C5DCF0;  /* светло-голубой фон страницы (лёд) */
+  --color-bg-deep:       #AECCEB;  /* затемнённый край градиента фона   */
+  --color-card:          #FFFFFF;  /* карточки                          */
+  --color-card-2:        #F3F8FD;  /* вторичная поверхность             */
+
+  /* Цвета — характеристики / валюты */
+  --color-reputation:    #C89AB8;  /* репутация — розово-лиловый        */
+  --color-mastery:       #72B8C8;  /* токены мастерства — бирюзовый     */
+  --color-action:        #88C878;  /* токены действия — зелёный         */
+
+  /* Цвета — текст */
+  --color-text:          #2A2A2A;  /* основной текст                    */
+  --color-text-soft:     #5E6B78;  /* приглушённый / подписи            */
+  --color-text-faint:    #93A4B4;  /* очень светлый / метки уровней     */
+  --color-on-accent:     #FFFFFF;  /* текст на тёмном/цветном           */
+
+  /* Линии и тени */
+  --color-line:          #E1ECF6;  /* разделители                       */
+  --color-border:        #2A2A2A;  /* тёмная обводка кнопок             */
+  --shadow-card:         0 6px 18px rgba(60, 96, 134, 0.14);
+  --shadow-card-sm:      0 3px 10px rgba(60, 96, 134, 0.12);
+  --shadow-pop:          0 10px 28px rgba(60, 96, 134, 0.22);
+
+  /* Скругления */
+  --radius-card:         14px;
+  --radius-lg:           20px;
+  --radius-pill:         999px;
+  --radius-sm:           10px;
+
+  /* Отступы (шаг 4px) */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
+  --space-4: 16px; --space-5: 20px; --space-6: 24px; --space-8: 32px;
+
+  /* Типографика */
+  --font-sans: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fs-display: 26px;   --lh-display: 1.15;
+  --fs-h1:      22px;   --lh-h1: 1.2;
+  --fs-h2:      18px;   --lh-h2: 1.25;
+  --fs-body:    16px;   --lh-body: 1.45;
+  --fs-small:   14px;
+  --fs-tiny:    12px;
+  --tracking-caps: 0.04em;
+
+  /* Размеры элементов управления */
+  --tap:        44px;   /* минимальная зона нажатия */
+  --header-h:   56px;
+  --tabbar-h:   64px;
+  --app-width:  375px;
+}
+
+/* ---- 3. База ------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+
+.nl, body.nl {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  /* едва заметный ледяной узор поверх фона */
+  background-image: var(--bg-texture, none);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.nl h1, .nl h2, .nl h3 { margin: 0; font-weight: 800; color: var(--color-text); }
+.nl h1 { font-size: var(--fs-h1);  line-height: var(--lh-h1); }
+.nl h2 { font-size: var(--fs-h2);  line-height: var(--lh-h2); }
+.nl p  { margin: 0 0 var(--space-3); }
+.nl a  { color: inherit; }
+
+.nl-caps {
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  font-weight: 800;
+}
+
+/* ---- 4. Шапка ----------------------------------------------------------- */
+.nl-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: var(--header-h);
+  padding: 0 var(--space-4);
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-line);
+}
+.nl-header__logo { width: 34px; height: 34px; flex: 0 0 auto; object-fit: contain; }
+.nl-header__title {
+  flex: 1;
+  text-align: center;
+  font-size: var(--fs-h2);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+.nl-header__btn {
+  width: var(--tap); height: var(--tap);
+  display: grid; place-items: center;
+  background: none; border: none; cursor: pointer; color: var(--color-text);
+  flex: 0 0 auto;
+}
+
+/* ---- 5. Карточки -------------------------------------------------------- */
+.nl-card {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
+}
+.nl-card--flush { padding: 0; overflow: hidden; }
+
+/* ---- 6. Кнопки ---------------------------------------------------------- */
+.nl-btn {
+  font-family: inherit;
+  font-weight: 800;
+  font-size: var(--fs-small);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  min-height: var(--tap);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+}
+.nl-btn:active { transform: translateY(1px) scale(.99); }
+
+/* Заполненная тёмная — «Подробнее», «Взять задание» */
+.nl-btn--solid {
+  background: var(--color-text);
+  color: var(--color-on-accent);
+  border: 2px solid var(--color-text);
+  box-shadow: var(--shadow-card-sm);
+}
+/* Светлая с обводкой — «Взять задание» (вторичная) */
+.nl-btn--ghost {
+  background: var(--color-card);
+  color: var(--color-text);
+  border: 2px solid var(--color-text);
+}
+/* Акцентная — действие */
+.nl-btn--accent {
+  background: var(--color-action);
+  color: var(--color-text);
+  border: 2px solid color-mix(in srgb, var(--color-action) 75%, black);
+}
+.nl-btn:disabled { opacity: .55; cursor: default; }
+.nl-btn--block { width: 100%; }
+
+/* ---- 7. Таб-переключатель (пилюля) -------------------------------------- */
+.nl-tabs {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-1);
+}
+.nl-tab {
+  flex: 1;
+  min-height: 56px;
+  border: none; cursor: pointer;
+  font-family: inherit; font-weight: 800; font-size: var(--fs-small);
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  border-radius: var(--radius-lg);
+  background: var(--color-card);
+  color: var(--color-text-soft);
+  box-shadow: var(--shadow-card-sm);
+  transition: all .15s ease;
+  line-height: 1.15;
+}
+.nl-tab--active {
+  background: var(--color-text);
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-card);
+}
+
+/* ---- 8. Прогресс-бар (вертикальный, снизу вверх) ------------------------ */
+.nl-progress {
+  position: relative;
+  background: var(--color-card-2);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.nl-progress__fill {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: var(--fill, var(--color-action));
+  background-image: repeating-linear-gradient(
+    180deg, rgba(255,255,255,.16) 0 2px, transparent 2px 11px);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: height .9s cubic-bezier(.22,1,.36,1);
+}
+/* горизонтальный вариант */
+.nl-progress--h .nl-progress__fill {
+  top: 0; right: auto;
+  border-radius: var(--radius-sm);
+  transition: width .9s cubic-bezier(.22,1,.36,1);
+}
+
+/* ---- 9. Нижняя таб-панель ----------------------------------------------- */
+.nl-tabbar {
+  display: flex;
+  height: var(--tabbar-h);
+  background: var(--color-card);
+  border-top: 1px solid var(--color-line);
+}
+.nl-tabbar__item {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  border: none; background: none; cursor: pointer;
+  color: var(--color-text-faint);
+  font-family: inherit; font-size: 11px; font-weight: 700;
+}
+.nl-tabbar__item--active { color: var(--color-text); }
+.nl-tabbar__item--active .nl-tabbar__icon { transform: translateY(-1px); }
+.nl-tabbar__icon { width: 24px; height: 24px; transition: transform .15s ease; }
+
+/* ---- 10. Прочее --------------------------------------------------------- */
+.nl-meta { color: var(--color-text-soft); font-size: var(--fs-small); }
+.nl-divider { height: 1px; background: var(--color-line); border: 0; margin: var(--space-4) 0; }
+.nl-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-weight: 800; color: #fff; font-size: 13px; flex: 0 0 auto;
+}
+.nl-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: var(--radius-pill);
+  background: var(--color-card-2); color: var(--color-text-soft);
+  font-size: var(--fs-tiny); font-weight: 700;
+}

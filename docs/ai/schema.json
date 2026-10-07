@@ -6,7 +6,7 @@
   "counts": {
     "modules": 8,
     "tables": 48,
-    "fields": 345,
+    "fields": 342,
     "foreignKeyFields": 88
   },
   "modules": [
@@ -122,7 +122,7 @@
       "sourceAnchor": "_toc239371071",
       "description": "Взрослые учётные записи для единого шлюза «Кабинеты».",
       "notes": [
-        "**Пояснения.** Ребёнок в accounts не хранится."
+        "**Пояснения.** Ребёнок в accounts не хранится. Логический password_hash соответствует полю password Django (хеш или маркер unusable password); last_login_at соответствует last_login. Поля phone_verified_at, email_verified_at и external_brand_id допускают NULL; процедуры подтверждения контактов и интеграция с общей базой бренда ещё не реализованы. Технические поля Django admin и permissions не перечислены. OAuth и SMS в будущем могут сосуществовать с паролем; отдельную модель способов входа предстоит спроектировать."
       ],
       "fields": [
         {
@@ -144,9 +144,9 @@
         {
           "name": "phone",
           "keys": [],
-          "type": "varchar(32) NULL",
-          "nullable": true,
-          "description": "Телефон; уникальный, если указан."
+          "type": "varchar(32)",
+          "nullable": false,
+          "description": "Обязательный уникальный телефон взрослого в международном формате; основной идентификатор входа. Ввод 11 цифр с началом 7 или 8 приводится к +7."
         },
         {
           "name": "email",
@@ -332,7 +332,7 @@
           "keys": [],
           "type": "varchar(100)",
           "nullable": false,
-          "description": "Уникальный детский логин."
+          "description": "Уникальный детский логин на основе имени и фамилии латиницей; транслитерация и разрешение совпадений ещё не определены."
         },
         {
           "name": "access_code_hash",
