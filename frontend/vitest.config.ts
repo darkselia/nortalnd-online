@@ -1,21 +1,31 @@
-import { fileURLToPath } from 'node:url';
-import { defineVitestConfig } from '@nuxt/test-utils/config';
+import { defineConfig } from 'vitest/config';
+import { defineVitestProject } from '@nuxt/test-utils/config';
 
-export default defineVitestConfig({
+export default defineConfig({
   test: {
-    environment: 'nuxt',
-    include: ['tests/nuxt/**/*.spec.ts'],
-    setupFiles: ['./tests/setup.ts'],
-    environmentOptions: {
-      nuxt: {
-        rootDir: fileURLToPath(new URL('.', import.meta.url)),
-        domEnvironment: 'happy-dom',
-        overrides: {
-          ui: {
-            fonts: false,
-          },
+    projects: [
+      {
+        test: {
+          name: 'unit',
+          include: ['tests/unit/**/*.spec.ts'],
         },
       },
-    },
+      await defineVitestProject({
+        test: {
+          name: 'nuxt',
+          hookTimeout: 30_000,
+          include: ['tests/nuxt/**/*.spec.ts'],
+          setupFiles: ['./tests/setup.ts'],
+          environmentOptions: {
+            nuxt: {
+              domEnvironment: 'happy-dom',
+              overrides: {
+                ui: { fonts: false },
+              },
+            },
+          },
+        },
+      }),
+    ],
   },
 });
